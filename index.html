@@ -1,0 +1,3048 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Simulador de Estrategias de Recaudo – Black Days | Jardines del Renacer</title>
+<style>
+  :root {
+    --navy-950: #071229;
+    --navy-900: #0B1C3D;
+    --navy-800: #122956;
+    --navy-700: #1D3E7A;
+    --navy-600: #2552A3;
+    --blue-500: #2563EB;
+    --blue-100: #DBEAFE;
+    --blue-50:  #EFF6FF;
+    --slate-900:#0F172A;
+    --slate-700:#334155;
+    --slate-600:#475569;
+    --slate-500:#64748B;
+    --slate-300:#CBD5E1;
+    --slate-200:#E2E8F0;
+    --slate-100:#F1F5F9;
+    --slate-50: #F8FAFC;
+    --white:    #FFFFFF;
+    --green-700:#047857;
+    --green-600:#059669;
+    --green-100:#D1FAE5;
+    --green-50: #ECFDF5;
+    --amber-700:#B45309;
+    --amber-600:#D97706;
+    --amber-100:#FEF3C7;
+    --amber-50: #FFFBEB;
+    --red-700:  #B91C1C;
+    --red-600:  #DC2626;
+    --red-100:  #FEE2E2;
+    --red-50:   #FEF2F2;
+    --shadow-sm:0 1px 2px rgba(11,28,61,0.06);
+    --shadow-md:0 4px 14px rgba(11,28,61,0.08);
+    --shadow-lg:0 10px 28px rgba(11,28,61,0.12);
+    --radius: 12px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
+    background: var(--slate-100);
+    color: var(--slate-900);
+    line-height: 1.45;
+    font-size: 13.5px;
+  }
+
+  /* HEADER EJECUTIVO */
+  .topbar {
+    background: linear-gradient(135deg, var(--navy-950) 0%, var(--navy-900) 52%, var(--navy-700) 100%);
+    color: var(--white);
+    padding: 18px 26px;
+    box-shadow: var(--shadow-lg);
+    position: sticky;
+    top: 0;
+    z-index: 40;
+    border-bottom: 3px solid #3B82F6;
+  }
+  .topbar-inner {
+    max-width: 1580px;
+    margin: 0 auto;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 14px;
+  }
+  .brand-kicker {
+    font-size: 10.5px;
+    letter-spacing: 1.4px;
+    text-transform: uppercase;
+    color: #93C5FD;
+    font-weight: 700;
+    margin-bottom: 3px;
+  }
+  .brand-title {
+    font-size: 20px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .badge-live {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 9px;
+    border-radius: 999px;
+    background: rgba(16,185,129,0.2);
+    border: 1px solid rgba(52,211,153,0.55);
+    color: #A7F3D0;
+  }
+  .badge-custom {
+    background: rgba(245,158,11,0.22);
+    border-color: rgba(251,191,36,0.6);
+    color: #FDE68A;
+  }
+  .brand-sub {
+    font-size: 12px;
+    color: #CBD5E1;
+    margin-top: 3px;
+  }
+  .top-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    border-radius: 8px;
+    border: 1px solid transparent;
+    font-size: 12.5px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .15s ease;
+    text-decoration: none;
+    white-space: nowrap;
+  }
+  .btn-ghost {
+    background: rgba(255,255,255,0.10);
+    color: var(--white);
+    border-color: rgba(255,255,255,0.22);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.20); }
+  .btn-accent {
+    background: #2563EB;
+    color: var(--white);
+  }
+  .btn-accent:hover { background: #1D4ED8; }
+  .btn-emerald {
+    background: var(--green-600);
+    color: var(--white);
+  }
+  .btn-emerald:hover { background: var(--green-700); }
+  .btn-navy {
+    background: var(--navy-800);
+    color: var(--white);
+  }
+  .btn-navy:hover { background: var(--navy-900); }
+  .btn-outline {
+    background: var(--white);
+    color: var(--navy-900);
+    border-color: var(--slate-300);
+  }
+  .btn-outline:hover { background: var(--slate-50); border-color: var(--navy-600); }
+  .btn-sm { padding: 5px 10px; font-size: 11.5px; border-radius: 6px; }
+
+  /* CONTENEDOR PRINCIPAL */
+  .container {
+    max-width: 1580px;
+    margin: 18px auto 48px;
+    padding: 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  /* BARRA DE EXCLUSIÓN DE POSIBLES PAGOS */
+  .pay-guard-bar {
+    background: var(--white);
+    border: 1.5px solid var(--slate-200);
+    border-left: 5px solid var(--navy-700);
+    border-radius: var(--radius);
+    padding: 13px 18px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    transition: all .2s ease;
+  }
+  .pay-guard-bar.active {
+    background: linear-gradient(90deg, #ECFDF5 0%, #FFFFFF 60%);
+    border-color: #6EE7B7;
+    border-left-color: var(--green-600);
+  }
+  .pay-guard-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+  .pay-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    padding: 9px 16px;
+    border-radius: 9px;
+    border: 2px solid var(--navy-700);
+    background: var(--navy-900);
+    color: var(--white);
+    font-size: 13px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .pay-toggle-btn:hover { background: var(--navy-700); }
+  .pay-toggle-btn.active {
+    background: var(--green-600);
+    border-color: var(--green-700);
+    box-shadow: 0 0 0 3px rgba(16,185,129,0.22);
+  }
+  .pay-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+    align-items: center;
+  }
+  .pay-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--slate-300);
+    background: var(--slate-50);
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--slate-700);
+    cursor: pointer;
+    user-select: none;
+  }
+  .pay-pill.checked {
+    background: var(--green-100);
+    border-color: #34D399;
+    color: var(--green-700);
+  }
+  .pay-pill input { accent-color: var(--green-600); cursor: pointer; }
+  .pay-guard-stats {
+    font-size: 12px;
+    color: var(--slate-700);
+    text-align: right;
+  }
+  .pay-guard-stats strong { color: var(--navy-900); }
+  .pay-guard-bar.active .pay-guard-stats strong { color: var(--green-700); }
+
+  /* TARJETAS Y LAYOUT PRINCIPAL 2 COLUMNAS */
+  .grid-2col {
+    display: grid;
+    grid-template-columns: minmax(420px, 1.02fr) minmax(460px, 1.18fr);
+    gap: 18px;
+    align-items: start;
+  }
+  @media (max-width: 1120px) {
+    .grid-2col { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-md);
+    overflow: hidden;
+  }
+  .card-head {
+    background: linear-gradient(90deg, var(--navy-900), var(--navy-800));
+    color: var(--white);
+    padding: 12px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .card-head h2 {
+    font-size: 14.5px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .step-pill {
+    background: rgba(59,130,246,0.28);
+    border: 1px solid rgba(147,197,253,0.45);
+    color: #DBEAFE;
+    font-size: 10.5px;
+    font-weight: 800;
+    padding: 2px 8px;
+    border-radius: 999px;
+  }
+  .card-body { padding: 16px 18px; }
+
+  /* SECCIÓN 1: FILTROS MULTISELECT */
+  .filter-block { margin-bottom: 14px; }
+  .filter-block:last-child { margin-bottom: 0; }
+  .filter-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+  }
+  .filter-title {
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+    color: var(--navy-800);
+  }
+  .quick-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+  .chip {
+    font-size: 11px;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 6px;
+    border: 1px solid var(--slate-300);
+    background: var(--slate-50);
+    color: var(--navy-800);
+    cursor: pointer;
+    transition: all .12s;
+  }
+  .chip:hover { background: var(--blue-50); border-color: var(--blue-500); color: var(--blue-500); }
+  .chk-grid-reg {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(168px, 1fr));
+    gap: 5px;
+    max-height: 182px;
+    overflow-y: auto;
+    padding: 8px;
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+  }
+  .chk-grid-est {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+    padding: 8px;
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+  }
+  @media (max-width: 600px) { .chk-grid-est { grid-template-columns: 1fr; } }
+  .chk-grid-med {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    padding: 8px;
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+  }
+  .chk-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 6px;
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    cursor: pointer;
+    font-size: 11.8px;
+    transition: border-color .12s, background .12s;
+    user-select: none;
+  }
+  .chk-item:hover { border-color: var(--navy-600); background: var(--blue-50); }
+  .chk-item.checked {
+    border-color: var(--navy-600);
+    background: #EFF6FF;
+    font-weight: 600;
+  }
+  .chk-item label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    flex: 1;
+    min-width: 0;
+  }
+  .chk-item input[type=checkbox] { accent-color: var(--navy-700); width: 14px; height: 14px; flex-shrink: 0; cursor: pointer; }
+  .chk-lbl { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .chk-cnt {
+    font-size: 10.5px;
+    color: var(--slate-500);
+    font-weight: 700;
+    background: var(--slate-100);
+    padding: 1px 6px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .dot-tag { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .dot-adel { background: #10B981; }
+  .dot-hoy  { background: #F59E0B; }
+  .dot-atr  { background: #EF4444; }
+
+  /* RESUMEN DEL SEGMENTO */
+  .seg-summary {
+    margin-top: 14px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 8px;
+  }
+  @media (max-width: 720px) { .seg-summary { grid-template-columns: repeat(2, 1fr); } }
+  .seg-box {
+    background: linear-gradient(180deg, #F8FAFC 0%, #EEF2F7 100%);
+    border: 1px solid var(--slate-200);
+    border-top: 3px solid var(--navy-700);
+    border-radius: 8px;
+    padding: 9px 10px;
+  }
+  .seg-box .k-lbl { font-size: 10.2px; font-weight: 700; color: var(--slate-600); text-transform: uppercase; letter-spacing: 0.3px; }
+  .seg-box .k-val { font-size: 15px; font-weight: 800; color: var(--navy-900); margin-top: 3px; word-break: break-word; }
+  .seg-box .k-sub { font-size: 10.5px; color: var(--slate-500); margin-top: 2px; }
+
+  /* SECCIÓN 2: CANALES DE COMUNICACIÓN */
+  .channel-list {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+  .ch-row {
+    border: 1.5px solid var(--slate-200);
+    border-radius: 10px;
+    padding: 10px 12px;
+    background: var(--slate-50);
+    transition: all .15s;
+  }
+  .ch-row.active {
+    background: var(--white);
+    border-color: var(--navy-600);
+    box-shadow: 0 2px 8px rgba(37,82,163,0.10);
+  }
+  .ch-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .ch-check-wrap {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    cursor: pointer;
+    flex: 1;
+    min-width: 200px;
+  }
+  .ch-check-wrap input { width: 16px; height: 16px; accent-color: var(--navy-700); cursor: pointer; }
+  .ch-color-bar { width: 4px; height: 28px; border-radius: 4px; flex-shrink: 0; }
+  .ch-name { font-weight: 800; font-size: 13px; color: var(--navy-900); }
+  .ch-desc { font-size: 11px; color: var(--slate-500); }
+  .ch-inputs {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  .mini-inp-grp {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+  .mini-inp-grp label { font-size: 10px; font-weight: 700; color: var(--slate-600); text-transform: uppercase; }
+  .mini-inp {
+    width: 86px;
+    padding: 4px 7px;
+    border: 1px solid var(--slate-300);
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--navy-900);
+    background: var(--white);
+    text-align: right;
+  }
+  .mini-inp:focus { outline: none; border-color: var(--blue-500); box-shadow: 0 0 0 2px rgba(37,99,235,0.18); }
+  .ch-metrics {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px dashed var(--slate-200);
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 8px;
+  }
+  .ch-m { font-size: 11px; color: var(--slate-600); }
+  .ch-m strong { display: block; font-size: 12.5px; color: var(--navy-900); }
+  .nondup-banner {
+    margin-top: 12px;
+    padding: 10px 13px;
+    border-radius: 8px;
+    background: var(--blue-50);
+    border: 1px solid #BFDBFE;
+    color: var(--navy-800);
+    font-size: 11.8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  /* SECCIÓN 3: PROMOCIÓN BLACK DAYS */
+  .promo-grid {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 14px;
+  }
+  @media (max-width: 1120px) { .promo-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px)  { .promo-grid { grid-template-columns: 1fr; } }
+  .promo-ctrl {
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-radius: 10px;
+    padding: 12px 13px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .promo-ctrl-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .promo-ctrl label {
+    font-size: 11.5px;
+    font-weight: 800;
+    color: var(--navy-800);
+  }
+  .promo-badge {
+    font-size: 15px;
+    font-weight: 900;
+    color: var(--blue-500);
+    background: var(--white);
+    border: 1px solid #BFDBFE;
+    padding: 2px 9px;
+    border-radius: 7px;
+  }
+  .promo-ctrl input[type=range] {
+    width: 100%;
+    accent-color: var(--navy-700);
+    cursor: pointer;
+  }
+  .promo-hint { font-size: 10.8px; color: var(--slate-500); }
+
+  /* SECCIÓN 4: 14 KPIs FINANCIEROS */
+  .kpi-hero-row {
+    display: grid;
+    grid-template-columns: 1.45fr 1fr 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  @media (max-width: 1050px) { .kpi-hero-row { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px)  { .kpi-hero-row { grid-template-columns: 1fr; } }
+
+  .kpi-hero {
+    border-radius: 11px;
+    padding: 15px 17px;
+    color: var(--white);
+    background: linear-gradient(135deg, var(--navy-950), var(--navy-700));
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+  }
+  .kpi-hero.pos { background: linear-gradient(135deg, #064E3B 0%, #059669 100%); }
+  .kpi-hero.warn { background: linear-gradient(135deg, #78350F 0%, #D97706 100%); }
+  .kpi-hero.neg { background: linear-gradient(135deg, #7F1D1D 0%, #DC2626 100%); }
+  .kpi-hero .h-lbl { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.6px; opacity: 0.9; }
+  .kpi-hero .h-val { font-size: 24px; font-weight: 900; margin-top: 5px; letter-spacing: -0.5px; }
+  .kpi-hero .h-sub { font-size: 11.2px; opacity: 0.9; margin-top: 4px; }
+
+  .kpi-grid-10 {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 10px;
+  }
+  @media (max-width: 1180px) { .kpi-grid-10 { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 720px)  { .kpi-grid-10 { grid-template-columns: repeat(2, 1fr); } }
+
+  .kpi-card {
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-radius: 9px;
+    padding: 11px 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+  .kpi-card .kc-lbl { font-size: 10.6px; font-weight: 700; color: var(--slate-600); text-transform: uppercase; }
+  .kpi-card .kc-val { font-size: 16px; font-weight: 800; color: var(--navy-900); margin-top: 4px; word-break: break-word; }
+  .kpi-card .kc-sub { font-size: 10.5px; color: var(--slate-500); margin-top: 3px; }
+  .kpi-card.cost .kc-val { color: var(--red-700); }
+  .kpi-card.good .kc-val { color: var(--green-700); }
+
+  .formula-strip {
+    margin-top: 12px;
+    padding: 9px 14px;
+    border-radius: 8px;
+    background: #F1F5F9;
+    border-left: 4px solid var(--navy-700);
+    font-size: 11.8px;
+    color: var(--slate-700);
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 8px;
+  }
+
+  /* SECCIÓN 5: 8 GRÁFICOS + 3 ESCENARIOS */
+  .charts-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+  @media (max-width: 980px) { .charts-grid { grid-template-columns: 1fr; } }
+  .chart-box {
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-radius: 10px;
+    padding: 13px 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .chart-title {
+    font-size: 12.8px;
+    font-weight: 800;
+    color: var(--navy-900);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 6px;
+  }
+  .chart-sub { font-size: 11px; color: var(--slate-500); font-weight: 600; }
+  .chart-svg-wrap { width: 100%; min-height: 220px; position: relative; }
+
+  /* TABLAS EJECUTIVAS */
+  .tbl-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--slate-200);
+    border-radius: 9px;
+    background: var(--white);
+  }
+  table { width: 100%; border-collapse: collapse; font-size: 12.3px; }
+  thead th {
+    background: var(--navy-900);
+    color: var(--white);
+    font-weight: 700;
+    text-align: left;
+    padding: 9px 11px;
+    white-space: nowrap;
+    font-size: 11.5px;
+  }
+  tbody td {
+    padding: 8px 11px;
+    border-bottom: 1px solid var(--slate-200);
+    white-space: nowrap;
+  }
+  tbody tr:hover { background: var(--blue-50); }
+  tbody tr.highlight-row { background: #EFF6FF; font-weight: 700; }
+  .num { text-align: right; font-variant-numeric: tabular-nums; }
+  .ctr { text-align: center; }
+
+  /* SECCIÓN 6: SEMÁFORO Y CONCLUSIONES */
+  .semaphore-banner {
+    border-radius: 11px;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 16px;
+    border: 2px solid transparent;
+  }
+  .sem-green { background: var(--green-50); border-color: #34D399; color: #065F46; }
+  .sem-yellow { background: var(--amber-50); border-color: #FBBF24; color: #92400E; }
+  .sem-red { background: var(--red-50); border-color: #F87171; color: #991B1B; }
+  .sem-light {
+    width: 48px; height: 48px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px; flex-shrink: 0;
+    box-shadow: inset 0 -3px 6px rgba(0,0,0,0.18);
+  }
+  .sem-green .sem-light { background: var(--green-600); color: white; }
+  .sem-yellow .sem-light { background: var(--amber-600); color: white; }
+  .sem-red .sem-light { background: var(--red-600); color: white; }
+  .sem-title { font-size: 16px; font-weight: 900; }
+  .sem-desc { font-size: 12.8px; margin-top: 3px; }
+
+  .insights-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px;
+  }
+  @media (max-width: 900px) { .insights-grid { grid-template-columns: 1fr; } }
+  .insight-card {
+    background: var(--slate-50);
+    border: 1px solid var(--slate-200);
+    border-left: 4px solid var(--navy-700);
+    border-radius: 9px;
+    padding: 12px 14px;
+  }
+  .insight-card.warn { border-left-color: var(--amber-600); background: #FFFDF7; }
+  .insight-card.good { border-left-color: var(--green-600); background: #F7FEFB; }
+  .insight-card.bad  { border-left-color: var(--red-600); background: #FEF8F8; }
+  .insight-card h4 { font-size: 12.5px; font-weight: 800; color: var(--navy-900); margin-bottom: 5px; }
+  .insight-card p  { font-size: 12.2px; color: var(--slate-700); line-height: 1.5; }
+
+  /* SECCIÓN 7: EXPORTACIÓN OPERATIVA DE BASES */
+  .export-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+  @media (max-width: 900px) { .export-grid { grid-template-columns: 1fr; } }
+  .export-box {
+    border: 1.5px solid var(--slate-200);
+    border-radius: 11px;
+    padding: 16px;
+    background: var(--slate-50);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .export-box.wsp { border-top: 4px solid var(--green-600); }
+  .export-box.call { border-top: 4px solid var(--navy-700); }
+  .export-box h3 { font-size: 14.5px; font-weight: 800; color: var(--navy-900); }
+  .export-box ul { margin-left: 18px; font-size: 12px; color: var(--slate-700); display: flex; flex-direction: column; gap: 3px; }
+  .export-opts {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    background: var(--white);
+    border: 1px solid var(--slate-200);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+  }
+  .export-opts label { display: flex; align-items: center; gap: 7px; cursor: pointer; font-weight: 600; color: var(--slate-700); }
+  .export-opts input { accent-color: var(--navy-700); }
+
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: var(--blue-50);
+    color: var(--navy-800);
+    border: 1px solid #BFDBFE;
+  }
+
+  /* TOOLTIP FLOTANTE */
+  .svg-tip {
+    position: fixed;
+    pointer-events: none;
+    background: rgba(7,18,41,0.95);
+    color: #FFFFFF;
+    padding: 7px 11px;
+    border-radius: 7px;
+    font-size: 11.5px;
+    font-weight: 600;
+    z-index: 999;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.28);
+    display: none;
+    max-width: 280px;
+    line-height: 1.4;
+  }
+
+  .footer-note {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--slate-500);
+    padding: 10px 0 24px;
+  }
+</style>
+</head>
+<body>
+
+<div id="svgTip" class="svg-tip"></div>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div>
+      <div class="brand-kicker">Planeación y Control de Cartera · Inteligencia de Negocios</div>
+      <div class="brand-title">
+        <span>Simulador de Estrategias de Recaudo – Black Days | Jardines del Renacer</span>
+        <span id="dataSourceBadge" class="badge-live">Base Real: 183,319 contratos</span>
+      </div>
+      <div class="brand-sub" id="dataSubLine">
+        Corte actualizado: 2026-11-25 15:29 · ATRASO (45,486) + VIGENTES Adelantados/Anticipados (137,833) · Calibrado con efectividad real de campañas e histórico de recaudo (COP)
+      </div>
+    </div>
+    <div class="top-actions">
+      <button class="btn btn-ghost" onclick="resetAllFilters()">↺ Restablecer Filtros</button>
+      <label class="btn btn-ghost" style="cursor:pointer;">
+        📂 Cargar CSV/Excel
+        <input id="customFileInp" type="file" accept=".csv,.txt,.tsv" style="display:none" onchange="handleCustomCsv(event)">
+      </label>
+      <button class="btn btn-accent" onclick="saveCurrentScenario()">📌 Guardar Escenario</button>
+      <a class="btn btn-emerald" href="#sec-export">📥 Descargar Bases (.xlsx)</a>
+    </div>
+  </div>
+</header>
+
+<main class="container">
+
+  <!-- BARRA DE EXCLUSIÓN DE CLIENTES CON POSIBLES PAGOS (BANCOLOMBIA, NEQUI, DAVIVIENDA, WOMPI, PSE) -->
+  <section id="payGuardBar" class="pay-guard-bar">
+    <div class="pay-guard-left">
+      <button id="btnTogglePayGuard" class="pay-toggle-btn" onclick="toggleMasterPayExclude()">
+        <span id="payGuardIcon">🛡️</span>
+        <span id="payGuardText">Excluir clientes con posibles pagos (Bancolombia · Nequi · Davivienda · Wompi · PSE)</span>
+      </button>
+      <div class="pay-pills" id="payChannelPills"></div>
+    </div>
+    <div class="pay-guard-stats" id="payGuardStats"></div>
+  </section>
+
+  <!-- MÓDULOS 1 (IZQUIERDA) Y 2 (DERECHA) -->
+  <div class="grid-2col">
+
+    <!-- 1. SEGMENTACIÓN DE LA CARTERA -->
+    <section class="card">
+      <div class="card-head">
+        <h2><span class="step-pill">PASO 1</span> Segmentación de la Cartera</h2>
+        <div class="quick-chips">
+          <button class="chip" onclick="presetEstados('all')">Toda la cartera</button>
+          <button class="chip" onclick="presetEstados('atraso')">Solo Atraso + Hoy</button>
+          <button class="chip" onclick="presetEstados('mora_1_50')">Mora 1–50d</button>
+          <button class="chip" onclick="presetEstados('adelantado')">Solo Adelantados</button>
+        </div>
+      </div>
+      <div class="card-body">
+
+        <!-- Regional -->
+        <div class="filter-block">
+          <div class="filter-header">
+            <span class="filter-title">Regional (Selección múltiple)</span>
+            <div class="quick-chips">
+              <label class="chip" style="display:inline-flex;align-items:center;gap:5px;">
+                <input type="checkbox" id="chkAllReg" checked onchange="toggleAllReg(this.checked)"> Todas las regionales
+              </label>
+              <button class="chip" onclick="toggleAllReg(false)">Limpiar</button>
+            </div>
+          </div>
+          <div class="chk-grid-reg" id="regBox"></div>
+        </div>
+
+        <!-- Estado de la cartera (10 rangos exactos) -->
+        <div class="filter-block">
+          <div class="filter-header">
+            <span class="filter-title">Estado de la cartera (ATRASO Col BR · VIGENTES Col BJ)</span>
+            <div class="quick-chips">
+              <label class="chip" style="display:inline-flex;align-items:center;gap:5px;">
+                <input type="checkbox" id="chkAllEst" checked onchange="toggleAllEst(this.checked)"> Todos los estados
+              </label>
+            </div>
+          </div>
+          <div class="chk-grid-est" id="estBox"></div>
+        </div>
+
+        <!-- Medios de pago -->
+        <div class="filter-block">
+          <div class="filter-header">
+            <span class="filter-title">Medios de pago (Tipo Cobrador · Col BS / BK)</span>
+            <div class="quick-chips">
+              <label class="chip" style="display:inline-flex;align-items:center;gap:5px;">
+                <input type="checkbox" id="chkAllMed" checked onchange="toggleAllMed(this.checked)"> Todos los medios
+              </label>
+            </div>
+          </div>
+          <div class="chk-grid-med" id="medBox"></div>
+        </div>
+
+        <!-- Resumen automático del segmento -->
+        <div class="seg-summary">
+          <div class="seg-box">
+            <div class="k-lbl">Clientes Potenciales</div>
+            <div class="k-val" id="segClients">0</div>
+            <div class="k-sub" id="segClientsSub">Cel. válido: 0</div>
+          </div>
+          <div class="seg-box">
+            <div class="k-lbl">Valor Cartera Sel.</div>
+            <div class="k-val" id="segValue">$0</div>
+            <div class="k-sub">1 cuota mensual</div>
+          </div>
+          <div class="seg-box">
+            <div class="k-lbl">Cuota Promedio</div>
+            <div class="k-val" id="segAvgCuota">$0</div>
+            <div class="k-sub">Plan exequial</div>
+          </div>
+          <div class="seg-box">
+            <div class="k-lbl">Efectiv. Histórica</div>
+            <div class="k-val" id="segBaseEff">0.0%</div>
+            <div class="k-sub">Sin campaña</div>
+          </div>
+          <div class="seg-box">
+            <div class="k-lbl">Recaudo Sin Camp.</div>
+            <div class="k-val" id="segBaseRev">$0</div>
+            <div class="k-sub" id="segBasePayers">0 clientes</div>
+          </div>
+        </div>
+
+      </div>
+    </section>
+
+    <!-- 2. SELECCIÓN DE CANALES DE COMUNICACIÓN -->
+    <section class="card">
+      <div class="card-head">
+        <h2><span class="step-pill">PASO 2</span> Canales de Comunicación y Costos</h2>
+        <div class="quick-chips">
+          <button class="chip" onclick="presetCanales(['sms','pregrabada','call_center'])">Mix Óptimo</button>
+          <button class="chip" onclick="presetCanales(['sms','pregrabada','wsp_masivo'])">Masivo Digital</button>
+          <button class="chip" onclick="presetCanales(['wsp_dirigido','call_center','oficinas'])">Costo $0 Interno</button>
+          <button class="chip" onclick="resetChannelOverrides()">Restaurar Costos/Ef.</button>
+        </div>
+      </div>
+      <div class="card-body">
+        <div class="channel-list" id="channelList"></div>
+        <div class="nondup-banner" id="nonDupBanner"></div>
+      </div>
+    </section>
+
+  </div>
+
+  <!-- 3. CONFIGURACIÓN DE LA PROMOCIÓN BLACK DAYS -->
+  <section class="card">
+    <div class="card-head">
+      <h2><span class="step-pill">PASO 3</span> Configuración de la Promoción Black Days</h2>
+      <div class="quick-chips">
+        <button class="chip" onclick="presetPromo(10,3,7,6.0,35)">Ejemplo Base: 10% · 3 cuotas</button>
+        <button class="chip" onclick="presetPromo(15,6,7,8.5,28)">Agresiva: 15% · 6 cuotas</button>
+        <button class="chip" onclick="presetPromo(5,3,5,3.5,25)">Conservadora: 5% · 3 cuotas</button>
+        <button class="chip" onclick="presetPromo(0,1,7,0.0,0)">Sin Descuento (Solo Gestión)</button>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="promo-grid">
+        <div class="promo-ctrl">
+          <div class="promo-ctrl-top">
+            <label for="slDiscount">% Descuento Black Days</label>
+            <span class="promo-badge" id="valDiscount">10%</span>
+          </div>
+          <input type="range" id="slDiscount" min="0" max="30" step="1" value="10" oninput="onPromoChange()">
+          <div class="promo-hint">Rango permitido: 0% a 30%. Calculado solo sobre pagadores que cumplen la promo.</div>
+        </div>
+
+        <div class="promo-ctrl">
+          <div class="promo-ctrl-top">
+            <label for="slMinCuotas">Mínimo de cuotas a pagar</label>
+            <span class="promo-badge" id="valMinCuotas">3 cuotas</span>
+          </div>
+          <input type="range" id="slMinCuotas" min="1" max="12" step="1" value="3" oninput="onPromoChange()">
+          <div class="promo-hint">Exigir ≥3 cuotas protege el flujo de caja y mitiga la canibalización del descuento.</div>
+        </div>
+
+        <div class="promo-ctrl">
+          <div class="promo-ctrl-top">
+            <label for="slDays">Duración de la campaña</label>
+            <span class="promo-badge" id="valDays">7 días</span>
+          </div>
+          <input type="range" id="slDays" min="1" max="30" step="1" value="7" oninput="onPromoChange()">
+          <div class="promo-hint">Ventana de urgencia comercial (5–10 días maximiza sentido de escasez Black Days).</div>
+        </div>
+
+        <div class="promo-ctrl">
+          <div class="promo-ctrl-top">
+            <label for="slUplift">Incremento de efectividad</label>
+            <span class="promo-badge" id="valUplift">+6.0%</span>
+          </div>
+          <input type="range" id="slUplift" min="0" max="25" step="0.5" value="6.0" oninput="onPromoChange()">
+          <div class="promo-hint">Impulso adicional atribuible al atractivo promocional sobre la gestión habitual.</div>
+        </div>
+
+        <div class="promo-ctrl">
+          <div class="promo-ctrl-top">
+            <label for="slAdopt">% Pagadores que toman promo</label>
+            <span class="promo-badge" id="valAdopt">35%</span>
+          </div>
+          <input type="range" id="slAdopt" min="0" max="100" step="1" value="35" oninput="onPromoChange()">
+          <div class="promo-hint">Proporción de clientes que pagan y cumplen el mínimo de cuotas con descuento.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. PROYECCIÓN ECONÓMICA Y FINANCIERA (14 INDICADORES) -->
+  <section class="card">
+    <div class="card-head">
+      <h2><span class="step-pill">PASO 4</span> Proyección Económica y Financiera (COP Exacto)</h2>
+      <span id="finBadge" class="step-pill">Escenario Moderado Activo</span>
+    </div>
+    <div class="card-body">
+      <div class="kpi-hero-row">
+        <div class="kpi-hero" id="heroIncNeto">
+          <div class="h-lbl">Recaudo Incremental Neto de la Campaña</div>
+          <div class="h-val" id="kpiIncNeto">$0</div>
+          <div class="h-sub" id="kpiIncNetoSub">Recaudo adicional neto vs. no hacer campaña</div>
+        </div>
+        <div class="kpi-hero">
+          <div class="h-lbl">Recaudo Neto (Post-Dcto y Costos)</div>
+          <div class="h-val" id="kpiRecNeto">$0</div>
+          <div class="h-sub" id="kpiCrecSub">Crecimiento: +0.0% vs habitual</div>
+        </div>
+        <div class="kpi-hero">
+          <div class="h-lbl">Retorno Sobre la Inversión (ROI)</div>
+          <div class="h-val" id="kpiROI">0%</div>
+          <div class="h-sub" id="kpiROISub">Sobre inversión total (Com. + Descuentos)</div>
+        </div>
+        <div class="kpi-hero">
+          <div class="h-lbl">Punto de Equilibrio</div>
+          <div class="h-val" id="kpiBreakeven">0 ctos</div>
+          <div class="h-sub" id="kpiBreakevenSub">Recaudo mínimo para cubrir costos + dctos</div>
+        </div>
+      </div>
+
+      <div class="kpi-grid-10">
+        <div class="kpi-card">
+          <div class="kc-lbl">1. Clientes Impactados (Únicos)</div>
+          <div class="kc-val" id="kpiImpactados">0</div>
+          <div class="kc-sub" id="kpiImpactadosSub">Sin duplicación entre canales</div>
+        </div>
+        <div class="kpi-card good">
+          <div class="kc-lbl">2. Clientes a Recuperar</div>
+          <div class="kc-val" id="kpiRecuperados">0</div>
+          <div class="kc-sub" id="kpiRecupSub">0 con promo · 0 pago regular</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kc-lbl">3. Efectividad Histórica</div>
+          <div class="kc-val" id="kpiEffHist">0.0%</div>
+          <div class="kc-sub">Comportamiento sin campaña</div>
+        </div>
+        <div class="kpi-card good">
+          <div class="kc-lbl">4. Efectividad Proyectada</div>
+          <div class="kc-val" id="kpiEffProy">0.0%</div>
+          <div class="kc-sub" id="kpiEffDelta">+0.0 pp vs histórica</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kc-lbl">5. Recaudo Sin Campaña</div>
+          <div class="kc-val" id="kpiRecBase">$0</div>
+          <div class="kc-sub">Línea base habitual (1 cuota)</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kc-lbl">6. Recaudo Bruto Con Campaña</div>
+          <div class="kc-val" id="kpiRecBruto">$0</div>
+          <div class="kc-sub">Antes de descuentos y costos</div>
+        </div>
+        <div class="kpi-card cost">
+          <div class="kc-lbl">7. Descuentos Otorgados</div>
+          <div class="kc-val" id="kpiDescuentos">$0</div>
+          <div class="kc-sub" id="kpiDescSub">Solo sobre clientes con promo</div>
+        </div>
+        <div class="kpi-card cost">
+          <div class="kc-lbl">8. Costo Total Comunicación</div>
+          <div class="kc-val" id="kpiCostoCom">$0</div>
+          <div class="kc-sub" id="kpiCostoSub">Suma de canales activos</div>
+        </div>
+        <div class="kpi-card">
+          <div class="kc-lbl">9. Recaudo Después de Descuentos</div>
+          <div class="kc-val" id="kpiRecPostDesc">$0</div>
+          <div class="kc-sub">Recaudo bruto – descuentos</div>
+        </div>
+        <div class="kpi-card good">
+          <div class="kc-lbl">10. Crecimiento vs Habitual</div>
+          <div class="kc-val" id="kpiCrecPct">+0.0%</div>
+          <div class="kc-sub">Variación porcentual neta</div>
+        </div>
+      </div>
+
+      <div class="formula-strip">
+        <span><strong>Fórmula aplicada:</strong> Recaudo incremental neto = Recaudo bruto con campaña – Descuentos proyectados – Costos de comunicación – Recaudo esperado sin campaña.</span>
+        <span id="formulaNumbers"></span>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. COMPARACIÓN GRÁFICA DE ESCENARIOS (8 GRÁFICOS + 3 ESCENARIOS + COMPARADOR) -->
+  <section class="card">
+    <div class="card-head">
+      <h2><span class="step-pill">PASO 5</span> Comparación Gráfica y Análisis de Escenarios</h2>
+      <span class="step-pill">8 Gráficos Dinámicos + Conservador / Moderado / Optimista</span>
+    </div>
+    <div class="card-body">
+      <div class="charts-grid">
+        <div class="chart-box">
+          <div class="chart-title"><span>1. Recaudo Sin Campaña vs. Con Campaña</span><span class="chart-sub">COP Exacto</span></div>
+          <div class="chart-svg-wrap" id="ch1"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title"><span>2. Efectividad Histórica vs. Proyectada</span><span class="chart-sub">% Conversión</span></div>
+          <div class="chart-svg-wrap" id="ch2"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title"><span>3. Costo Total por Canal de Comunicación</span><span class="chart-sub">Inversión COP</span></div>
+          <div class="chart-svg-wrap" id="ch3"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title"><span>4. Recaudo Proyectado Atribuido por Canal</span><span class="chart-sub">Sin duplicación</span></div>
+          <div class="chart-svg-wrap" id="ch4"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title"><span>5. Descuentos y Costos vs. Recaudo Adicional Generado</span><span class="chart-sub">Puente Económico</span></div>
+          <div class="chart-svg-wrap" id="ch5"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title"><span>6. Recaudo Incremental Neto por Regional (Top 10)</span><span class="chart-sub">Prioridad Geográfica</span></div>
+          <div class="chart-svg-wrap" id="ch6"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title"><span>7. Efectividad por Rango de Atraso o Adelanto</span><span class="chart-sub">Histórica vs. Campaña</span></div>
+          <div class="chart-svg-wrap" id="ch7"></div>
+        </div>
+        <div class="chart-box">
+          <div class="chart-title"><span>8. Efectividad por Medio de Pago</span><span class="chart-sub">Histórica vs. Campaña</span></div>
+          <div class="chart-svg-wrap" id="ch8"></div>
+        </div>
+      </div>
+
+      <!-- Comparación 3 escenarios: Conservador / Moderado / Optimista -->
+      <div style="margin-top:18px;">
+        <div class="filter-header">
+          <span class="filter-title">Comparación de 3 Escenarios de Sensibilidad (Conservador · Moderado · Optimista)</span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Escenario</th>
+                <th class="num">Efectividad</th>
+                <th class="num">Clientes Recup.</th>
+                <th class="num">Recaudo Bruto</th>
+                <th class="num">Descuentos</th>
+                <th class="num">Costo Canales</th>
+                <th class="num">Recaudo Neto</th>
+                <th class="num">Incremental Neto</th>
+                <th class="num">Crecimiento</th>
+                <th class="num">ROI</th>
+              </tr>
+            </thead>
+            <tbody id="scenariosTbody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Comparador de configuraciones guardadas por el usuario -->
+      <div style="margin-top:18px;">
+        <div class="filter-header">
+          <span class="filter-title">Comparador de Configuraciones Guardadas (Reunión de Gerencia)</span>
+          <div class="quick-chips">
+            <button class="btn btn-navy btn-sm" onclick="saveCurrentScenario()">📌 Guardar configuración actual</button>
+            <button class="btn btn-outline btn-sm" onclick="clearSavedScenarios()">Limpiar guardados</button>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Configuración</th>
+                <th>Canales</th>
+                <th class="ctr">Promo</th>
+                <th class="ctr">Excl. Pagos</th>
+                <th class="num">Clientes</th>
+                <th class="num">Costo Com.</th>
+                <th class="num">Descuentos</th>
+                <th class="num">Incremental Neto</th>
+                <th class="num">ROI</th>
+                <th class="ctr">Acción</th>
+              </tr>
+            </thead>
+            <tbody id="savedTbody">
+              <tr><td colspan="10" style="text-align:center;color:#64748B;padding:14px;">Haz clic en <strong>"📌 Guardar configuración actual"</strong> para comparar diferentes combinaciones de descuento, cuotas, regionales y canales lado a lado.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. ANÁLISIS, SEMAFORIZACIÓN Y CONCLUSIONES AUTOMÁTICAS -->
+  <section class="card">
+    <div class="card-head">
+      <h2><span class="step-pill">PASO 6</span> Análisis Ejecutivo, Semaforización y Recomendaciones Automáticas</h2>
+      <span class="step-pill">Motor Decisional en Tiempo Real</span>
+    </div>
+    <div class="card-body">
+      <div id="semaphoreBox" class="semaphore-banner sem-green"></div>
+      <div id="insightsGrid" class="insights-grid"></div>
+    </div>
+  </section>
+
+  <!-- 7. GENERADOR Y DESCARGA DE BASES REALES DE CAMPAÑA (.XLSX NATIVO) -->
+  <section class="card" id="sec-export">
+    <div class="card-head">
+      <h2><span class="step-pill">PASO 7</span> Generador y Descarga de Bases Operativas (.xlsx)</h2>
+      <span id="contractsStatusPill" class="status-pill">⏳ Cargando base de contratos reales...</span>
+    </div>
+    <div class="card-body">
+      <div class="export-grid">
+
+        <!-- MODO A: WHATSAPP / LLAMADA PREGRABADA / SMS -->
+        <div class="export-box wsp">
+          <div>
+            <h3>📱 Base para WhatsApp Masivo, Llamada Pregrabada o SMS</h3>
+            <p style="font-size:12px;color:#475569;margin:5px 0 8px;">
+              Aplica estrictamente todas las reglas de depuración comercial y descarga un archivo Excel <code>.xlsx</code> nativo listo para plataforma de envíos:
+            </p>
+            <ul>
+              <li><strong>Hoja <code>ENVIO_WHATSAPP</code></strong> con exactamente 6 columnas: <code>CELULAR | NOMBRE | DIAS_MORA | VALOR_PROPUESTA | VALOR POR 3 CUOTAS CON EL X% | VALOR POR 6 CUOTAS CON EL X%</code>.</li>
+              <li><strong>CELULAR válido 10 dígitos iniciando en 3</strong> (prioridad <code>CELULAR → OTROTELEF → TELEFFIJO</code>; omite registros sin celular válido).</li>
+              <li><strong>NOMBRE limpio</strong> (Primer Nombre + Primer Apellido en formato Tipo Título) y valores en pesos colombianos con punto (<code>$35.000</code>).</li>
+              <li><strong>Estilo corporativo:</strong> cabecera azul <code>#1F4E78</code> blanca negrita, bordes grises, alineaciones exactas, anchos autoajustados y fila 1 congelada (<code>A2</code>).</li>
+            </ul>
+          </div>
+
+          <div class="export-opts">
+            <label><input type="checkbox" id="optSolo1Cuota" onchange="renderExportPreview()"> Solo toma la cuota sin multiplicar (1 cuota exacta en VALOR_PROPUESTA)</label>
+            <label><input type="checkbox" id="optProntoPago" onchange="renderExportPreview()"> Campaña de pronto pago / anticipados (DIAS_MORA ≤ 0 muestra 1 cuota en vez de "Al día")</label>
+            <label><input type="checkbox" id="optLock10" checked onchange="renderExportPreview()"> Mantener columnas fijas al 10% (desmarcar para usar el % actual del simulador)</label>
+          </div>
+
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+            <span id="wspCountInfo" style="font-size:12px;font-weight:700;color:#047857;">Calculando base depurada...</span>
+            <button class="btn btn-emerald" id="btnExpWsp" onclick="downloadExcelWhatsapp()">📥 Descargar ENVIO_WHATSAPP (.xlsx)</button>
+          </div>
+        </div>
+
+        <!-- MODO B: CALL CENTER / OFICINAS / WSP DIRIGIDO (TODAS LAS COLUMNAS) -->
+        <div class="export-box call">
+          <div>
+            <h3>📞 Base Call Center / Oficinas / WhatsApp Dirigido (Todas las Columnas)</h3>
+            <p style="font-size:12px;color:#475569;margin:5px 0 8px;">
+              Descarga la base completa con <strong>todas las 27 columnas operativas</strong> filtradas exactamente por las Regionales, Estados de Cartera, Medios de Pago y el filtro de exclusión de posibles pagos activos arriba:
+            </p>
+            <ul>
+              <li>Incluye <code>ORIGEN_HOJA</code> (ATRASO/VIGENTES), <code>IDCONTRATO</code>, <code>IDPERSONA</code>, <code>NOMBRES_COMPLETO</code>, <code>NOMBRE_CORTO</code>, <code>CELULAR_VALIDO</code>, teléfonos adicionales, <code>EMAIL</code> y <code>DIRECCION</code>.</li>
+              <li>Incluye <code>REGIONAL</code>, <code>ZONAS</code>, <code>COBRADOR</code>, <code>ASESOR</code>, <code>TIPO_COBRADOR</code>, <code>NOMBREPLAN</code>, <code>ESTATUS</code>, <code>FECHAULTIMOPAGO</code>, <code>PAGOHASTA</code>.</li>
+              <li>Incluye alerta de <code>POSIBLE_PAGO_RADAR</code> (Bancolombia / Nequi / Davivienda / Wompi / PSE) + columnas de propuesta y descuento Black Days.</li>
+            </ul>
+          </div>
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;margin-top:auto;">
+            <span id="callCountInfo" style="font-size:12px;font-weight:700;color:#1D3E7A;">Calculando base completa...</span>
+            <button class="btn btn-navy" id="btnExpCall" onclick="downloadExcelCallCenter()">📥 Descargar Base Call Center (.xlsx)</button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Vista previa en vivo de los primeros 12 registros depurados -->
+      <div>
+        <div class="filter-header">
+          <span class="filter-title">Vista Previa en Vivo — Base Depurada <code>ENVIO_WHATSAPP</code> (Primeros 12 registros según filtros activos)</span>
+          <span id="previewMeta" style="font-size:11.5px;color:#64748B;"></span>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th class="ctr">CELULAR</th>
+                <th>NOMBRE</th>
+                <th class="ctr">DIAS_MORA</th>
+                <th class="num">VALOR_PROPUESTA</th>
+                <th class="num" id="th3c">VALOR POR 3 CUOTAS CON EL 10%</th>
+                <th class="num" id="th6c">VALOR POR 6 CUOTAS CON EL 10%</th>
+                <th>REGIONAL</th>
+                <th>POSIBLE PAGO</th>
+              </tr>
+            </thead>
+            <tbody id="previewTbody">
+              <tr><td colspan="8" style="text-align:center;color:#64748B;padding:12px;">Cargando vista previa de registros reales...</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <div class="footer-note">
+    Simulador de Estrategias de Recaudo – Black Days | Jardines del Renacer · Planeación y Control de Cartera · Todos los cálculos financieros están expresados en Pesos Colombianos (COP) exactos y calibrados con data histórica de recaudo.
+  </div>
+</main>
+
+<!-- BASE COMPACTA GZIP PARA EXPORTACIÓN REAL DE CONTRATOS -->
+<script>
+  const INITIAL_CUBE = {"generated_at":"2026-11-25 15:29","source_file":"TODO EL ATRASO.xlsx (ATRASO + VIGENTES Adelantados)","total_contracts":183319,"total_atraso":45486,"total_vigentes_adel":137833,"total_valid_cell":181477,"total_with_any_pay":2994,"pay_counts":{"NEQUI":2951,"DAVIVIENDA":23,"BANCOLOMBIA":18,"WOMPI":5},"pay_indexed_rows":{"BANCOLOMBIA":11304,"DAVIVIENDA":4602,"WOMPI":720,"PSE":35,"NEQUI":30909},"pay_channels":[{"bit":1,"id":"BANCOLOMBIA","label":"Bancolombia"},{"bit":2,"id":"NEQUI","label":"Nequi"},{"bit":4,"id":"DAVIVIENDA","label":"Davivienda"},{"bit":8,"id":"WOMPI","label":"Wompi"},{"bit":16,"id":"PSE","label":"PSE"}],"regionales":["QUINDIO","RISARALDA","CALDAS","VALLE NORTE","VALLE CENTRO","CUNDINAMARCA","ANTIOQUIA","TOLIMA","VALLE SUR - CALI","HUILA","VALLE CENTRO - PALMIRA","ATLANTICO","CAUCA","BOGOTA","SANTANDER","META","PUTUMAYO","OPERACION NACIONAL","OTROS / ANALISTA"],"reg_factors":{"QUINDIO":1.0469,"RISARALDA":1.0782,"CALDAS":1.0129,"VALLE NORTE":1.0242,"VALLE CENTRO":1.0107,"CUNDINAMARCA":0.9828,"ANTIOQUIA":0.9239,"TOLIMA":1.0426,"VALLE SUR - CALI":1.0232,"HUILA":0.8982,"VALLE CENTRO - PALMIRA":1.0057,"ATLANTICO":0.8636,"CAUCA":0.8822,"BOGOTA":0.8626,"SANTANDER":0.8307,"META":1.0359,"PUTUMAYO":0.7951,"OPERACION NACIONAL":1.0,"OTROS / ANALISTA":1.0},"medios":["MEDIOS","ASESOR COBRANZA","OFICINA","PUNTO DE RECAUDO","OTROS"],"med_factors":{"MEDIOS":0.9102,"ASESOR COBRANZA":1.0799,"OFICINA":0.9764,"PUNTO DE RECAUDO":0.9187,"OTROS":0.8863},"estados":[{"idx":0,"id":"adel_1_10","label":"Adelantados de 1 a 10 días","short":"Adel. 1-10d","group":"ADELANTADO","base_eff":0.135,"hist_camp_eff":0.165},{"idx":1,"id":"adel_11_30","label":"Adelantados de 11 a 30 días","short":"Adel. 11-30d","group":"ADELANTADO","base_eff":0.068,"hist_camp_eff":0.112},{"idx":2,"id":"adel_31_60","label":"Adelantados de 31 a 60 días","short":"Adel. 31-60d","group":"ADELANTADO","base_eff":0.038,"hist_camp_eff":0.075},{"idx":3,"id":"adel_61_mas","label":"Adelantados mayores a 60 días","short":"Adel. >60d","group":"ADELANTADO","base_eff":0.022,"hist_camp_eff":0.048},{"idx":4,"id":"vence_hoy","label":"Vencen hoy (0 días)","short":"Vencen hoy","group":"VENCE_HOY","base_eff":0.245,"hist_camp_eff":0.34},{"idx":5,"id":"atr_1_10","label":"Atraso de 1 a 10 días","short":"Atraso 1-10d","group":"ATRASO","base_eff":0.305,"hist_camp_eff":0.442},{"idx":6,"id":"atr_11_25","label":"Atraso de 11 a 25 días","short":"Atraso 11-25d","group":"ATRASO","base_eff":0.182,"hist_camp_eff":0.269},{"idx":7,"id":"atr_26_50","label":"Atraso de 26 a 50 días","short":"Atraso 26-50d","group":"ATRASO","base_eff":0.092,"hist_camp_eff":0.134},{"idx":8,"id":"atr_51_90","label":"Atraso de 51 a 90 días","short":"Atraso 51-90d","group":"ATRASO","base_eff":0.041,"hist_camp_eff":0.059},{"idx":9,"id":"atr_91_mas","label":"Atraso mayor a 90 días","short":"Atraso >90d","group":"ATRASO","base_eff":0.009,"hist_camp_eff":0.013}],"canales":[{"id":"sms","name":"SMS Masivo","short":"SMS","unit_cost":11.9,"requires_valid_cell":true,"base_lift":0.068,"hist_ref_eff":17.1,"medio_mult":{"MEDIOS":1.15,"OFICINA":1.05,"ASESOR COBRANZA":0.88,"PUNTO DE RECAUDO":0.95,"OTROS":0.9},"color":"#3B82F6","desc":"Envío masivo económico ($11,9/contacto) sobre celulares válidos de 10 dígitos."},{"id":"pregrabada","name":"Llamadas Pregrabadas","short":"Llam. Pregrabada","unit_cost":30.0,"requires_valid_cell":true,"base_lift":0.122,"hist_ref_eff":36.9,"medio_mult":{"MEDIOS":1.12,"OFICINA":1.1,"ASESOR COBRANZA":0.94,"PUNTO DE RECAUDO":1.02,"OTROS":0.95},"color":"#0EA5E9","desc":"Mensaje de voz automatizado ($30/contacto). Líder histórico en retorno por peso invertido."},{"id":"wsp_masivo","name":"WhatsApp Masivo","short":"WhatsApp Masivo","unit_cost":89.0,"requires_valid_cell":true,"base_lift":0.132,"hist_ref_eff":28.5,"medio_mult":{"MEDIOS":1.18,"OFICINA":1.04,"ASESOR COBRANZA":0.92,"PUNTO DE RECAUDO":0.96,"OTROS":0.95},"color":"#10B981","desc":"Campaña masiva oficial WhatsApp ($89/contacto) con propuesta personalizada y promo."},{"id":"wsp_dirigido","name":"WhatsApp Dirigido (Colaboradores)","short":"WSP Dirigido","unit_cost":0.0,"requires_valid_cell":true,"base_lift":0.104,"hist_ref_eff":24.5,"medio_mult":{"MEDIOS":1.08,"OFICINA":1.12,"ASESOR COBRANZA":1.05,"PUNTO DE RECAUDO":1.02,"OTROS":0.95},"color":"#14B8A6","desc":"Atención personalizada vía colaboradores/asesores internos sin costo variable por envío."},{"id":"call_center","name":"Llamadas Personalizadas Call Center","short":"Call Center","unit_cost":0.0,"requires_valid_cell":false,"base_lift":0.138,"hist_ref_eff":36.5,"medio_mult":{"MEDIOS":1.14,"OFICINA":1.06,"ASESOR COBRANZA":0.96,"PUNTO DE RECAUDO":1.0,"OTROS":0.95},"color":"#6366F1","desc":"Gestión telefónica directa del Call Center (sin costo variable adicional; editable)."},{"id":"oficinas","name":"Gestión Directa desde Oficinas","short":"Gestión Oficinas","unit_cost":0.0,"requires_valid_cell":false,"base_lift":0.088,"hist_ref_eff":22.0,"medio_mult":{"OFICINA":1.3,"PUNTO DE RECAUDO":1.15,"ASESOR COBRANZA":0.92,"MEDIOS":0.72,"OTROS":0.85},"color":"#F59E0B","desc":"Cierre presencial y recordatorio desde red de oficinas y puntos de atención."}],"cube":[[0,0,0,0,1349,1347,39624450],[0,0,0,2,17,17,447700],[0,0,1,0,3929,3886,125944640],[0,0,1,2,5,5,115000],[0,0,1,4,1,1,52000],[0,0,2,0,1828,1825,53274850],[0,0,2,2,7,7,182400],[0,0,3,0,17,17,439900],[0,0,4,0,4,4,126200],[0,1,0,0,1432,1427,41341760],[0,1,0,1,1,1,25000],[0,1,0,2,7,7,197700],[0,1,0,4,2,2,44200],[0,1,1,0,4576,4530,141986100],[0,1,1,2,7,7,183500],[0,1,2,0,2144,2138,62579800],[0,1,2,1,1,1,27400],[0,1,2,2,12,12,347800],[0,1,3,0,15,15,446900],[0,1,4,0,4,4,119500],[0,2,0,0,363,362,9602900],[0,2,0,2,5,5,132200],[0,2,1,0,750,741,22895350],[0,2,1,2,12,12,424600],[0,2,2,0,853,848,22855650],[0,2,2,2,15,15,433400],[0,2,3,0,16,16,363200],[0,2,4,0,6,5,155800],[0,3,0,0,274,271,7365450],[0,3,0,2,12,12,266550],[0,3,0,4,1,1,25500],[0,3,0,6,1,1,32000],[0,3,1,0,650,644,19705200],[0,3,1,2,14,14,420500],[0,3,2,0,778,772,20046609],[0,3,2,2,15,15,392400],[0,3,3,0,8,8,199800],[0,3,4,0,1,1,25000],[0,4,0,0,75,75,2126500],[0,4,0,2,3,3,72000],[0,4,1,0,175,175,5433400],[0,4,1,2,1,1,17000],[0,4,2,0,83,83,2234900],[0,4,3,0,3,3,61800],[0,5,0,0,527,526,14990750],[0,5,0,1,1,1,96200],[0,5,0,2,20,20,683700],[0,5,1,0,700,694,21402050],[0,5,1,2,2,2,94200],[0,5,2,0,425,424,12007600],[0,5,2,2,6,6,146000],[0,5,3,0,15,15,381000],[0,6,0,0,525,524,14934950],[0,6,0,2,35,35,762200],[0,6,1,0,230,228,6439600],[0,6,1,2,6,6,238000],[0,6,2,0,287,286,7987300],[0,6,2,2,4,4,107900],[0,6,3,0,9,9,212200],[0,6,3,2,1,1,12000],[0,7,0,0,469,469,13209100],[0,7,0,2,38,38,887650],[0,7,1,0,149,147,4633100],[0,7,1,2,3,3,105200],[0,7,2,0,206,206,5717800],[0,7,2,2,3,3,82000],[0,7,3,0,31,31,779750],[0,8,0,0,367,366,9546100],[0,8,0,2,69,69,1740350],[0,8,1,0,94,94,2525200],[0,8,1,2,2,2,64000],[0,8,2,0,159,159,4122100],[0,8,2,1,1,1,83200],[0,8,2,2,7,7,176100],[0,8,3,0,24,24,592200],[0,9,0,0,24,24,789450],[0,9,0,2,10,10,296200],[0,9,1,0,2,2,78000],[0,9,2,0,2,2,229000],[0,9,3,0,1,1,29000],[1,0,0,0,1057,1050,32439300],[1,0,0,2,13,13,361100],[1,0,1,0,3122,3086,98936150],[1,0,1,2,6,6,162200],[1,0,2,0,814,805,25710950],[1,0,2,2,4,4,96000],[1,0,3,0,2,2,48000],[1,1,0,0,1143,1137,34669800],[1,1,0,2,7,7,141550],[1,1,1,0,4297,4245,134271600],[1,1,1,2,6,6,199200],[1,1,2,0,1029,1021,30944420],[1,1,2,2,6,6,172000],[1,1,3,0,6,6,166300],[1,1,4,0,2,2,73500],[1,2,0,0,354,351,9945316],[1,2,0,2,11,10,234200],[1,2,1,0,1147,1132,34335650],[1,2,1,2,19,19,505700],[1,2,2,0,584,582,16648050],[1,2,2,2,15,15,445600],[1,2,3,0,4,3,101000],[1,2,4,0,1,1,102700],[1,3,0,0,254,251,6695300],[1,3,0,2,11,11,300700],[1,3,1,0,856,839,24898000],[1,3,1,2,13,13,390550],[1,3,2,0,639,629,17883650],[1,3,2,2,13,12,356000],[1,3,3,0,14,12,403000],[1,3,3,2,1,1,32000],[1,3,4,0,1,1,36300],[1,4,0,0,60,60,1740100],[1,4,0,2,1,1,10000],[1,4,1,0,126,126,3977450],[1,4,2,0,53,52,2237450],[1,4,3,0,1,1,14000],[1,5,0,0,427,425,12937320],[1,5,0,2,12,11,344750],[1,5,1,0,568,565,18003800],[1,5,1,2,2,2,64600],[1,5,2,0,206,203,6527150],[1,5,2,2,1,1,26000],[1,5,3,0,6,6,147200],[1,6,0,0,416,414,12756804],[1,6,0,2,31,31,851250],[1,6,1,0,204,203,6309400],[1,6,1,2,1,1,20000],[1,6,2,0,131,130,3762200],[1,6,2,2,4,4,121600],[1,6,3,0,9,9,220250],[1,7,0,0,319,315,9271707],[1,7,0,2,25,25,683300],[1,7,1,0,101,101,2789250],[1,7,1,2,3,3,55200],[1,7,2,0,107,106,3063850],[1,7,2,2,1,1,30100],[1,7,3,0,9,9,285400],[1,8,0,0,335,333,10008450],[1,8,0,2,46,46,1292450],[1,8,1,0,58,58,1653100],[1,8,1,2,2,2,50000],[1,8,2,0,78,77,2207150],[1,8,2,2,3,2,79000],[1,8,3,0,7,7,231400],[1,9,0,0,28,27,842750],[1,9,0,2,10,10,221900],[1,9,1,0,1,1,27000],[1,9,1,2,1,1,47000],[1,9,2,0,2,2,28500],[1,9,3,0,3,3,79200],[2,0,0,0,853,853,24462750],[2,0,0,2,5,5,123100],[2,0,1,0,1711,1708,53007050],[2,0,1,2,2,2,64750],[2,0,2,0,2363,2359,68234300],[2,0,2,2,5,5,138200],[2,0,3,0,81,81,2386450],[2,0,4,0,2,2,59800],[2,1,0,0,884,882,25516250],[2,1,0,2,6,6,152900],[2,1,1,0,1990,1981,60918050],[2,1,1,2,6,6,166800],[2,1,2,0,2989,2985,86033200],[2,1,2,2,15,15,406400],[2,1,3,0,112,111,3050800],[2,1,4,0,1,1,18000],[2,2,0,0,249,248,7202650],[2,2,0,2,4,4,80600],[2,2,1,0,440,440,12061100],[2,2,1,2,10,10,330600],[2,2,2,0,1480,1475,40243850],[2,2,2,2,20,20,732800],[2,2,3,0,58,58,1515600],[2,3,0,0,167,165,4355650],[2,3,0,2,2,2,37200],[2,3,1,0,356,354,9833700],[2,3,1,2,11,11,255200],[2,3,2,0,1304,1302,36286000],[2,3,2,2,26,26,755150],[2,3,3,0,33,33,869850],[2,4,0,0,66,66,1811800],[2,4,1,0,88,88,2763450],[2,4,2,0,135,135,3891700],[2,4,3,0,5,5,111200],[2,5,0,0,321,320,9049150],[2,5,0,1,1,1,30000],[2,5,0,2,8,8,296450],[2,5,0,4,1,1,22000],[2,5,1,0,331,329,9929550],[2,5,1,2,1,1,15700],[2,5,2,0,627,625,17539300],[2,5,2,2,5,5,152850],[2,5,3,0,33,33,841750],[2,6,0,0,234,233,6358350],[2,6,0,2,13,13,487300],[2,6,1,0,127,127,3557950],[2,6,1,2,3,3,73000],[2,6,2,0,369,369,9809600],[2,6,2,2,3,3,42600],[2,6,3,0,24,24,636050],[2,7,0,0,214,213,5714450],[2,7,0,2,13,13,238750],[2,7,1,0,74,74,1855450],[2,7,1,2,4,4,121650],[2,7,2,0,265,263,6731850],[2,7,2,2,6,6,122000],[2,7,3,0,12,12,330600],[2,8,0,0,123,123,2965450],[2,8,0,2,24,24,549310],[2,8,1,0,27,27,734500],[2,8,1,2,2,2,44200],[2,8,2,0,177,177,4440850],[2,8,2,2,5,5,121600],[2,8,3,0,6,6,135800],[2,8,3,2,1,1,10400],[2,9,0,0,14,14,332800],[2,9,0,2,3,3,89700],[2,9,1,0,1,1,14000],[2,9,2,0,2,2,30100],[2,9,3,0,1,1,28000],[3,0,0,0,544,542,17258800],[3,0,0,2,3,3,61000],[3,0,1,0,2595,2574,87113950],[3,0,1,2,4,4,114000],[3,0,1,8,1,1,31000],[3,0,2,0,1788,1781,56397150],[3,0,2,2,6,5,159600],[3,0,3,0,2,2,50500],[3,1,0,0,548,545,16873200],[3,1,0,2,3,3,89000],[3,1,1,0,2768,2756,88936270],[3,1,1,2,5,5,125900],[3,1,2,0,2275,2253,70993970],[3,1,2,2,17,17,543700],[3,1,3,0,3,3,63750],[3,2,0,0,148,148,4248850],[3,2,0,2,3,3,62000],[3,2,1,0,447,446,13567250],[3,2,1,2,9,9,334500],[3,2,2,0,1085,1076,31320900],[3,2,2,2,19,19,592800],[3,2,3,0,5,5,95700],[3,3,0,0,103,101,2791350],[3,3,0,2,2,2,53100],[3,3,1,0,453,449,13796250],[3,3,1,2,8,7,201000],[3,3,2,0,876,864,25018700],[3,3,2,2,20,19,698450],[3,3,3,0,3,3,87600],[3,4,0,0,29,28,804200],[3,4,1,0,118,116,4017850],[3,4,2,0,80,79,2497650],[3,4,2,2,1,1,17000],[3,4,3,0,1,1,69900],[3,5,0,0,188,187,5687340],[3,5,0,2,7,7,152250],[3,5,1,0,554,548,18326900],[3,5,1,2,1,1,20000],[3,5,2,0,449,444,13254250],[3,5,2,2,4,4,135150],[3,5,3,0,4,4,115400],[3,6,0,0,188,188,5533500],[3,6,0,2,14,14,379000],[3,6,0,4,1,1,156450],[3,6,1,0,183,183,5390050],[3,6,2,0,312,310,8756300],[3,6,2,2,3,3,100000],[3,6,3,0,4,4,114300],[3,6,3,2,1,1,21200],[3,7,0,0,143,142,4057400],[3,7,0,2,11,11,305900],[3,7,1,0,99,99,2877250],[3,7,1,2,1,1,23000],[3,7,2,0,200,196,5924750],[3,7,2,2,8,8,209300],[3,7,3,0,3,3,87300],[3,8,0,0,121,120,3500790],[3,8,0,2,11,11,299850],[3,8,1,0,76,75,2322050],[3,8,1,2,1,1,7000],[3,8,2,0,133,133,3686050],[3,8,2,2,4,4,94300],[3,8,3,0,10,10,245600],[3,9,0,0,17,17,558300],[3,9,0,2,4,4,139750],[3,9,1,0,1,1,52000],[3,9,2,0,2,2,62000],[4,0,0,0,502,497,15105750],[4,0,0,2,5,5,102000],[4,0,1,0,2507,2397,79586450],[4,0,2,0,1345,1282,39418300],[4,0,2,2,8,7,195100],[4,0,3,0,200,154,5170550],[4,1,0,0,482,476,14577200],[4,1,0,2,8,8,256900],[4,1,1,0,2792,2701,88229400],[4,1,1,2,4,4,108000],[4,1,2,0,1633,1554,45823000],[4,1,2,2,9,9,221000],[4,1,3,0,101,98,2836500],[4,1,3,2,1,0,22000],[4,2,0,0,166,164,4271550],[4,2,0,2,8,8,213150],[4,2,1,0,600,589,18625900],[4,2,1,2,6,6,229000],[4,2,2,0,912,823,23026650],[4,2,2,2,23,22,711850],[4,2,3,0,77,65,1864200],[4,3,0,0,108,107,2742300],[4,3,0,2,8,7,197600],[4,3,1,0,416,410,12765450],[4,3,1,2,8,8,266800],[4,3,2,0,859,764,21411200],[4,3,2,2,16,14,461000],[4,3,3,0,43,42,1086100],[4,4,0,0,27,27,773900],[4,4,0,2,1,1,21500],[4,4,1,0,111,110,3628150],[4,4,2,0,46,45,1487000],[4,4,3,0,4,4,106000],[4,5,0,0,224,223,7123950],[4,5,0,2,9,9,417300],[4,5,1,0,496,482,15718400],[4,5,2,0,290,287,7968550],[4,5,2,2,3,3,69000],[4,5,3,0,35,35,1001850],[4,6,0,0,219,217,6865900],[4,6,0,2,19,19,583450],[4,6,1,0,244,232,7485800],[4,6,1,2,1,1,27000],[4,6,2,0,210,202,5681450],[4,6,2,2,5,5,193500],[4,6,3,0,50,47,1225250],[4,6,3,2,1,1,28000],[4,7,0,0,238,230,7255050],[4,7,0,2,23,23,630400],[4,7,1,0,136,123,4146850],[4,7,1,2,3,2,56800],[4,7,2,0,153,146,3938400],[4,7,2,2,3,3,97450],[4,7,3,0,18,18,492400],[4,8,0,0,151,151,4308350],[4,8,0,2,29,29,808510],[4,8,1,0,83,81,2637400],[4,8,1,2,6,6,134550],[4,8,2,0,105,96,2904450],[4,8,2,2,3,3,97600],[4,8,3,0,15,15,378000],[4,9,0,0,14,14,349750],[4,9,0,2,2,2,48000],[4,9,2,0,1,1,18500],[5,0,0,0,918,913,27609550],[5,0,0,2,13,13,369150],[5,0,1,0,1576,1571,48349799],[5,0,1,2,1,1,28000],[5,0,2,0,1113,1113,34230800],[5,0,2,2,1,1,22000],[5,0,2,4,2,2,85600],[5,0,3,0,108,107,3375700],[5,1,0,0,997,992,29457250],[5,1,0,2,2,2,39000],[5,1,1,0,1839,1828,55415800],[5,1,2,0,1504,1503,44776850],[5,1,2,2,5,5,163050],[5,1,2,4,2,2,90100],[5,1,3,0,130,130,3938400],[5,1,3,2,1,1,20000],[5,2,0,0,322,322,8710400],[5,2,0,2,12,12,317500],[5,2,1,0,301,300,8631650],[5,2,1,2,2,2,49000],[5,2,2,0,590,590,17035400],[5,2,2,2,3,3,82800],[5,2,3,0,50,50,1364600],[5,2,3,2,2,2,43000],[5,3,0,0,265,262,7005650],[5,3,0,2,6,6,151000],[5,3,1,0,245,243,6925000],[5,3,1,2,2,2,47400],[5,3,2,0,579,579,16596900],[5,3,2,2,10,10,296350],[5,3,3,0,29,29,737800],[5,4,0,0,53,53,1482650],[5,4,0,2,2,2,61000],[5,4,1,0,93,93,2840000],[5,4,1,2,1,1,43000],[5,4,2,0,60,60,1781050],[5,4,3,0,5,5,129900],[5,5,0,0,485,485,14254650],[5,5,0,2,22,22,594550],[5,5,0,4,1,1,26000],[5,5,1,0,407,406,12265150],[5,5,1,2,3,3,93600],[5,5,2,0,414,414,12327100],[5,5,3,0,48,48,1483100],[5,6,0,0,472,472,13626750],[5,6,0,2,19,19,589850],[5,6,1,0,187,185,5684650],[5,6,2,0,249,249,7422550],[5,6,2,2,1,1,58000],[5,6,3,0,42,42,1298000],[5,6,3,2,1,1,37000],[5,7,0,0,404,404,11345000],[5,7,0,2,37,37,1045740],[5,7,1,0,96,96,2741800],[5,7,1,2,1,1,18800],[5,7,2,0,218,218,6280700],[5,7,2,2,2,2,51700],[5,7,3,0,25,25,676500],[5,8,0,0,413,413,11582850],[5,8,0,2,45,45,1263650],[5,8,1,0,61,61,1712850],[5,8,1,2,3,3,84600],[5,8,2,0,159,159,4524100],[5,8,2,2,6,6,203350],[5,8,3,0,17,17,505950],[5,9,0,0,13,13,378400],[5,9,0,2,7,7,229300],[5,9,2,0,4,4,102000],[6,0,0,0,1216,1209,39007200],[6,0,0,1,2,2,150400],[6,0,0,2,20,20,627150],[6,0,1,0,1854,1839,60457850],[6,0,1,2,3,3,77800],[6,0,2,0,193,191,5837100],[6,0,2,2,1,1,21500],[6,0,3,0,5,5,173000],[6,0,4,0,1,1,8000],[6,1,0,0,1325,1317,40892248],[6,1,0,2,19,19,424900],[6,1,1,0,2036,2025,63500350],[6,1,1,2,3,2,89000],[6,1,2,0,208,208,5573100],[6,1,2,2,3,3,72200],[6,1,3,0,4,4,140200],[6,2,0,0,606,604,17552700],[6,2,0,2,12,12,246700],[6,2,0,8,1,1,25000],[6,2,1,0,470,466,13325400],[6,2,1,2,7,7,204000],[6,2,2,0,132,132,3653650],[6,2,2,2,2,2,31000],[6,2,3,0,1,1,22000],[6,3,0,0,575,572,15782550],[6,3,0,2,18,18,432150],[6,3,1,0,292,290,8968550],[6,3,1,2,3,3,94000],[6,3,2,0,204,204,5576600],[6,3,2,2,8,8,244700],[6,4,0,0,97,97,3193100],[6,4,0,2,2,2,32000],[6,4,1,0,119,118,4002650],[6,4,1,2,1,1,25000],[6,4,2,0,14,14,359000],[6,5,0,0,869,865,28542750],[6,5,0,1,1,1,28000],[6,5,0,2,26,25,836450],[6,5,1,0,551,548,18096100],[6,5,2,0,71,70,2135300],[6,5,3,0,3,3,83000],[6,6,0,0,977,971,30136200],[6,6,0,2,39,39,1027300],[6,6,1,0,272,271,9033300],[6,6,1,2,2,2,73200],[6,6,2,0,57,57,1707600],[6,6,2,2,2,2,94000],[6,6,3,0,3,3,131200],[6,7,0,0,872,870,27350980],[6,7,0,1,2,2,50000],[6,7,0,2,57,57,1797550],[6,7,1,0,142,141,4640950],[6,7,1,2,3,3,105500],[6,7,2,0,52,52,1421750],[6,7,2,2,1,1,27200],[6,7,3,0,2,2,63200],[6,8,0,0,717,714,22202650],[6,8,0,2,68,68,2026100],[6,8,1,0,66,65,1875800],[6,8,1,2,4,4,130500],[6,8,2,0,43,43,1357150],[6,8,3,0,1,1,18000],[6,9,0,0,46,46,1509650],[6,9,0,2,21,21,668050],[6,9,1,0,2,2,60800],[6,9,2,0,2,2,37800],[7,0,0,0,876,874,25552850],[7,0,0,2,8,8,202850],[7,0,0,8,1,1,30000],[7,0,1,0,1378,1371,39693950],[7,0,1,2,2,2,49000],[7,0,2,0,974,967,27321450],[7,0,2,2,4,4,103100],[7,0,3,0,59,58,1663100],[7,0,4,0,114,102,3015000],[7,1,0,0,862,858,24607650],[7,1,0,1,1,1,29000],[7,1,0,2,6,6,153350],[7,1,1,0,1504,1489,42365200],[7,1,2,0,1325,1314,36186702],[7,1,2,2,4,4,104200],[7,1,3,0,46,46,1404600],[7,1,4,0,155,148,4088500],[7,1,4,2,1,1,24000],[7,2,0,0,301,298,8205620],[7,2,0,1,1,1,22500],[7,2,0,2,5,5,97600],[7,2,1,0,327,322,8435900],[7,2,1,2,2,2,70000],[7,2,2,0,690,686,17622000],[7,2,2,2,8,8,205900],[7,2,3,0,11,11,313000],[7,2,4,0,64,63,1652000],[7,2,4,4,1,1,20000],[7,3,0,0,267,265,6883000],[7,3,0,2,6,6,134700],[7,3,1,0,224,215,5492100],[7,3,1,2,7,7,173200],[7,3,2,0,803,796,20503450],[7,3,2,2,18,17,462400],[7,3,3,0,7,7,246600],[7,3,4,0,33,32,864000],[7,3,4,2,2,2,51000],[7,4,0,0,71,71,1904200],[7,4,1,0,99,99,2671400],[7,4,1,2,2,2,55000],[7,4,2,0,50,49,1375200],[7,4,3,0,5,5,139000],[7,5,0,0,400,398,11913400],[7,5,0,2,18,18,543350],[7,5,1,0,359,358,10407100],[7,5,2,0,278,275,7642900],[7,5,2,2,4,4,111800],[7,5,3,0,37,37,1038200],[7,6,0,0,361,359,10083200],[7,6,0,2,26,26,712650],[7,6,1,0,206,205,5778550],[7,6,1,2,1,1,29000],[7,6,2,0,229,228,6278850],[7,6,2,2,5,5,167600],[7,6,3,0,9,9,229500],[7,7,0,0,404,404,11183480],[7,7,0,2,21,21,532750],[7,7,1,0,110,109,3018500],[7,7,2,0,195,194,5138000],[7,7,2,2,5,5,104800],[7,7,3,0,1,1,32000],[7,8,0,0,311,311,8514380],[7,8,0,2,29,29,840450],[7,8,1,0,84,84,2452400],[7,8,1,2,1,1,31000],[7,8,2,0,150,149,3897450],[7,8,2,2,6,6,187200],[7,8,3,0,2,2,64800],[7,9,0,0,20,20,641360],[7,9,0,2,6,6,162450],[8,0,0,0,1015,1011,37311230],[8,0,0,2,10,10,305000],[8,0,1,0,2306,2283,86700740],[8,0,1,2,4,4,203000],[8,0,2,0,157,153,5120200],[8,0,3,0,14,14,376000],[8,1,0,0,960,955,35162370],[8,1,0,2,5,5,160450],[8,1,0,4,1,1,30000],[8,1,1,0,2173,2160,78492400],[8,1,1,2,1,1,35000],[8,1,2,0,222,221,7508350],[8,1,3,0,73,71,1817850],[8,1,4,0,1,1,40000],[8,2,0,0,297,295,10051300],[8,2,0,2,13,13,420150],[8,2,0,8,1,1,14000],[8,2,1,0,327,326,10357050],[8,2,1,2,2,2,69000],[8,2,2,0,122,120,3692100],[8,2,2,2,6,6,207600],[8,2,3,0,7,7,180500],[8,3,0,0,243,242,7932000],[8,3,0,2,18,18,497300],[8,3,1,0,294,289,9221500],[8,3,1,2,2,2,37000],[8,3,2,0,147,145,4407550],[8,3,2,2,2,2,131600],[8,3,3,0,5,5,125000],[8,4,0,0,92,92,3445250],[8,4,0,2,2,2,78700],[8,4,1,0,150,150,5380450],[8,4,2,0,11,11,384050],[8,5,0,0,510,508,18257100],[8,5,0,2,21,21,739150],[8,5,1,0,577,570,21010800],[8,5,2,0,54,54,1787950],[8,5,2,2,1,1,35900],[8,5,3,0,9,9,268250],[8,6,0,0,538,536,19084200],[8,6,0,2,25,25,1003750],[8,6,1,0,220,216,8482500],[8,6,1,2,2,2,66100],[8,6,2,0,43,43,1472950],[8,6,2,2,1,1,25000],[8,6,3,0,12,12,365000],[8,7,0,0,517,512,18376150],[8,7,0,2,35,35,1290132],[8,7,1,0,134,133,5334150],[8,7,1,2,1,1,7000],[8,7,2,0,22,22,721350],[8,7,2,2,1,1,15950],[8,7,3,0,5,5,107050],[8,8,0,0,389,388,13330080],[8,8,0,2,56,56,1816300],[8,8,1,0,118,118,4175650],[8,8,1,2,1,1,40700],[8,8,2,0,31,31,1037650],[8,8,3,0,2,2,44000],[8,9,0,0,32,31,1209800],[8,9,0,2,8,8,257550],[8,9,1,0,4,4,140000],[9,0,0,0,1209,1209,41293350],[9,0,0,2,20,20,625300],[9,0,0,4,1,1,26000],[9,0,1,0,603,603,20202700],[9,0,1,2,1,1,43000],[9,0,2,0,439,439,14660350],[9,0,2,2,2,2,80500],[9,0,3,0,32,32,991850],[9,1,0,0,1416,1415,47795970],[9,1,0,2,11,11,368150],[9,1,0,4,2,2,59300],[9,1,1,0,810,809,27533300],[9,1,1,2,2,2,69400],[9,1,2,0,534,533,17342841],[9,1,2,1,1,1,30600],[9,1,2,2,2,2,73000],[9,1,3,0,47,47,1247950],[9,2,0,0,496,495,15684650],[9,2,0,2,10,10,240700],[9,2,1,0,149,149,4702450],[9,2,1,2,3,3,96000],[9,2,2,0,317,317,9649074],[9,2,2,2,9,9,263700],[9,2,3,0,17,17,515941],[9,3,0,0,537,537,16968250],[9,3,0,2,16,16,452450],[9,3,1,0,341,340,10351350],[9,3,1,2,6,6,160000],[9,3,2,0,965,965,28552369],[9,3,2,2,11,11,319400],[9,3,3,0,65,65,1662881],[9,4,0,0,108,108,3503650],[9,4,0,2,1,1,48000],[9,4,1,0,29,29,893000],[9,4,2,0,31,31,1159050],[9,4,3,0,3,3,82000],[9,5,0,0,706,706,24181600],[9,5,0,1,1,1,26000],[9,5,0,2,12,12,342700],[9,5,1,0,106,105,3523550],[9,5,2,0,176,176,6066100],[9,5,2,2,1,1,31500],[9,5,3,0,4,4,191400],[9,6,0,0,646,646,22181250],[9,6,0,1,2,2,62000],[9,6,0,2,31,31,1049350],[9,6,1,0,31,30,1019600],[9,6,1,2,1,1,28000],[9,6,2,0,158,156,5525300],[9,6,2,2,2,2,43850],[9,6,3,0,1,1,9000],[9,7,0,0,638,638,21911000],[9,7,0,2,32,32,983550],[9,7,1,0,29,29,1010100],[9,7,2,0,233,233,7865750],[9,7,2,2,3,3,143700],[9,8,0,0,600,599,20598030],[9,8,0,2,46,46,1303350],[9,8,1,0,4,4,142600],[9,8,2,0,265,265,9441100],[9,8,2,2,5,5,200150],[9,8,3,0,4,4,143500],[9,9,0,0,23,23,739550],[9,9,0,2,14,14,399050],[10,0,0,0,787,782,28465500],[10,0,0,2,9,9,328100],[10,0,1,0,1452,1422,50104950],[10,0,2,0,605,603,19802800],[10,0,2,2,1,1,32000],[10,0,3,0,4,4,56500],[10,1,0,0,713,711,24660380],[10,1,0,1,1,1,37000],[10,1,0,2,7,7,146100],[10,1,1,0,1518,1492,50996600],[10,1,1,2,1,1,42000],[10,1,2,0,700,694,23072000],[10,1,2,2,4,4,84800],[10,1,3,0,13,13,294600],[10,2,0,0,220,220,6972450],[10,2,0,2,6,6,195000],[10,2,0,4,1,0,27450],[10,2,1,0,223,214,6820200],[10,2,1,2,2,2,47000],[10,2,2,0,311,305,9269100],[10,2,2,2,2,2,51000],[10,2,3,0,5,5,124400],[10,3,0,0,166,164,5323600],[10,3,0,2,9,9,235000],[10,3,1,0,174,166,5258750],[10,3,1,2,1,1,39400],[10,3,2,0,265,264,7711800],[10,3,2,2,6,6,174350],[10,3,3,0,9,9,184000],[10,4,0,0,56,56,1979250],[10,4,0,2,1,1,25000],[10,4,0,4,1,1,36700],[10,4,1,0,72,71,2290500],[10,4,2,0,34,34,1421950],[10,5,0,0,385,384,13510200],[10,5,0,2,13,13,472150],[10,5,1,0,340,335,11388200],[10,5,1,2,2,2,39000],[10,5,2,0,172,171,5690200],[10,5,3,0,4,4,184000],[10,6,0,0,402,398,14469149],[10,6,0,2,27,27,842450],[10,6,1,0,165,163,5294000],[10,6,1,2,3,3,103000],[10,6,2,0,127,126,4604100],[10,6,2,2,3,3,221000],[10,6,3,0,8,8,204000],[10,7,0,0,344,342,11502000],[10,7,0,2,28,28,854250],[10,7,1,0,79,79,2450000],[10,7,1,2,1,1,81000],[10,7,2,0,96,96,3149450],[10,7,2,2,2,2,57000],[10,7,3,0,3,3,139000],[10,8,0,0,285,282,9415450],[10,8,0,2,28,28,818550],[10,8,1,0,56,56,1801000],[10,8,1,2,2,2,36350],[10,8,2,0,102,102,3161250],[10,8,2,2,2,2,62000],[10,8,3,0,2,2,74000],[10,9,0,0,25,25,750400],[10,9,0,2,6,6,191750],[10,9,1,0,3,3,103750],[11,0,0,0,242,242,8760825],[11,0,0,2,8,8,257250],[11,0,1,0,581,580,21138244],[11,0,2,0,17,17,688700],[11,1,0,0,189,189,6361400],[11,1,0,2,3,3,118660],[11,1,1,0,619,619,22427800],[11,1,2,0,16,16,524850],[11,2,0,0,38,38,1297950],[11,2,1,0,90,90,3002050],[11,2,2,0,12,12,612100],[11,3,0,0,25,25,949800],[11,3,0,2,3,3,101150],[11,3,1,0,13,13,385850],[11,3,2,0,4,4,155350],[11,4,0,0,17,17,584700],[11,4,1,0,37,37,1422950],[11,4,2,0,2,2,49900],[11,5,0,0,152,152,5553050],[11,5,0,2,15,15,506000],[11,5,1,0,193,193,7203350],[11,5,1,2,1,1,22150],[11,5,2,0,9,9,302150],[11,6,0,0,249,248,8794100],[11,6,0,2,21,21,746900],[11,6,1,0,100,100,3515350],[11,6,2,0,6,6,206850],[11,7,0,0,364,364,12328822],[11,7,0,2,21,21,637350],[11,7,1,0,119,118,4153450],[11,7,1,2,1,1,44800],[11,7,2,0,21,21,684700],[11,8,0,0,209,208,7393312],[11,8,0,2,25,25,759662],[11,8,1,0,80,80,2719950],[11,8,1,2,2,2,65850],[11,8,2,0,22,22,711650],[11,8,2,2,2,2,64550],[11,9,0,0,8,8,295700],[11,9,0,2,3,3,91250],[11,9,1,0,4,4,135400],[11,9,2,0,1,1,7000],[12,0,0,0,237,236,7487800],[12,0,0,2,3,3,90800],[12,0,1,0,417,416,12804950],[12,0,2,0,111,111,3491400],[12,0,3,0,40,40,1229750],[12,1,0,0,260,260,7937300],[12,1,0,2,5,5,156700],[12,1,1,0,490,490,14421005],[12,1,2,0,139,139,4101300],[12,1,3,0,27,27,527900],[12,2,0,0,91,90,2724600],[12,2,0,2,4,4,114700],[12,2,1,0,73,72,2079700],[12,2,2,0,69,68,1944200],[12,2,2,2,1,1,26550],[12,2,3,0,13,13,343800],[12,3,0,0,66,66,1994850],[12,3,0,1,1,1,39250],[12,3,0,2,1,1,9850],[12,3,1,0,53,53,1406900],[12,3,2,0,109,107,2938900],[12,3,2,2,5,5,127200],[12,3,3,0,25,25,492200],[12,3,4,0,1,1,15650],[12,4,0,0,15,15,505550],[12,4,0,2,1,1,15700],[12,4,1,0,20,19,600550],[12,4,2,0,11,10,286600],[12,4,3,0,1,1,28000],[12,5,0,0,101,101,3052300],[12,5,0,2,12,12,347450],[12,5,1,0,112,112,3340800],[12,5,2,0,42,42,1275400],[12,5,2,2,1,1,34000],[12,5,3,0,24,22,598650],[12,6,0,0,117,117,3901650],[12,6,0,2,5,5,207950],[12,6,1,0,57,56,1667500],[12,6,2,0,36,36,1162650],[12,6,2,2,4,4,110400],[12,6,3,0,19,19,465800],[12,7,0,0,152,151,4804900],[12,7,0,2,16,16,500050],[12,7,1,0,52,52,1519250],[12,7,2,0,52,52,1534050],[12,7,2,2,2,2,43100],[12,7,3,0,15,15,299800],[12,8,0,0,123,122,3632050],[12,8,0,2,15,15,473750],[12,8,1,0,38,38,1136130],[12,8,1,2,2,2,27300],[12,8,2,0,38,38,1153700],[12,8,2,2,3,3,92650],[12,8,3,0,9,9,258260],[12,9,0,0,11,11,351750],[12,9,0,2,2,2,71200],[12,9,2,0,1,1,23400],[13,0,0,0,270,270,8959175],[13,0,0,2,11,11,327550],[13,0,1,0,89,84,3094100],[13,0,1,2,1,1,8000],[13,0,2,0,10,10,431000],[13,1,0,0,285,285,9652050],[13,1,0,2,5,5,96500],[13,1,0,6,1,1,7000],[13,1,0,8,1,1,39000],[13,1,1,0,110,106,3648150],[13,1,2,0,7,7,169300],[13,1,2,2,1,1,7000],[13,2,0,0,129,129,4225500],[13,2,0,2,2,2,60450],[13,2,0,6,1,1,22000],[13,2,1,0,119,118,3793700],[13,2,2,0,13,13,386800],[13,2,2,2,1,1,7000],[13,3,0,0,149,149,4007500],[13,3,0,2,12,12,211000],[13,3,0,4,1,1,50000],[13,3,1,0,86,85,2670000],[13,3,2,0,36,36,1008200],[13,3,2,2,2,2,21500],[13,4,0,0,9,9,251700],[13,4,0,2,1,1,39100],[13,4,1,0,5,5,163300],[13,4,2,0,1,1,40000],[13,5,0,0,153,153,4978200],[13,5,0,2,13,13,338300],[13,5,1,0,18,18,582250],[13,5,2,0,7,7,270000],[13,6,0,0,162,162,5393300],[13,6,0,2,17,17,571350],[13,6,1,0,14,14,451100],[13,6,2,0,3,3,58400],[13,6,2,2,1,1,40800],[13,7,0,0,221,221,7104400],[13,7,0,2,21,21,752700],[13,7,1,0,11,11,341600],[13,7,2,0,6,6,228800],[13,8,0,0,210,210,5493050],[13,8,0,2,34,34,951500],[13,8,1,0,7,7,228300],[13,8,2,0,8,8,171600],[13,8,2,2,1,1,42900],[13,9,0,0,8,8,240300],[13,9,0,2,1,1,27600],[14,0,0,0,100,100,3366350],[14,0,0,2,7,6,203500],[14,0,1,0,150,143,4567800],[14,0,2,0,28,27,831050],[14,0,3,0,80,75,2119700],[14,1,0,0,70,69,2199550],[14,1,0,2,1,1,17000],[14,1,1,0,205,190,6213750],[14,1,2,0,50,41,1543500],[14,1,2,2,1,1,39000],[14,1,3,0,122,109,3223200],[14,1,3,2,1,1,26000],[14,2,0,0,30,30,877450],[14,2,0,2,1,1,12000],[14,2,1,0,77,66,2028700],[14,2,2,0,55,44,1710200],[14,2,3,0,91,76,2259000],[14,2,3,2,2,2,52000],[14,3,0,0,27,27,659500],[14,3,0,2,3,3,115400],[14,3,1,0,62,52,1700200],[14,3,2,0,66,61,1752950],[14,3,2,2,1,1,32000],[14,3,3,0,82,71,2018500],[14,3,4,0,1,1,19583],[14,4,0,0,3,3,60750],[14,4,1,0,10,9,251050],[14,4,3,0,10,7,245000],[14,5,0,0,56,56,1898650],[14,5,0,2,5,5,132200],[14,5,1,0,50,50,1523450],[14,5,1,2,1,1,7000],[14,5,2,0,9,8,316700],[14,5,3,0,26,20,662150],[14,6,0,0,52,52,1427850],[14,6,0,2,5,5,103300],[14,6,1,0,36,35,1084200],[14,6,2,0,7,7,174350],[14,6,3,0,17,15,465400],[14,6,3,2,2,2,49000],[14,7,0,0,103,102,3211800],[14,7,0,2,13,13,363600],[14,7,1,0,36,35,1118650],[14,7,1,2,5,5,134600],[14,7,2,0,14,14,448550],[14,7,3,0,10,7,258500],[14,8,0,0,56,56,1627100],[14,8,0,2,8,8,221600],[14,8,1,0,31,31,809250],[14,8,1,2,2,2,59100],[14,8,2,0,8,6,244675],[14,8,3,0,10,7,314700],[14,9,0,0,15,15,526800],[14,9,0,2,4,4,98050],[15,0,0,0,44,44,1611550],[15,0,0,2,2,2,60450],[15,0,1,0,220,220,5766900],[15,0,2,0,18,17,555350],[15,1,0,0,70,70,2314900],[15,1,1,0,265,265,6808000],[15,1,2,0,38,38,996500],[15,2,0,0,20,20,475000],[15,2,0,2,1,1,28600],[15,2,1,0,57,57,1352450],[15,2,2,0,20,20,504600],[15,2,2,2,1,1,30000],[15,3,0,0,18,18,511300],[15,3,1,0,42,41,992600],[15,3,1,2,1,1,26000],[15,3,2,0,23,22,547000],[15,4,0,0,4,4,139850],[15,4,1,0,8,8,234200],[15,4,2,0,1,1,47500],[15,5,0,0,19,19,473800],[15,5,1,0,28,28,761250],[15,5,2,0,4,4,110650],[15,5,2,2,1,1,34000],[15,6,0,0,40,40,1493950],[15,6,0,2,4,4,94400],[15,6,0,4,1,1,25400],[15,6,1,0,17,17,496050],[15,6,2,0,4,4,100600],[15,7,0,0,45,45,1257850],[15,7,0,2,1,1,31600],[15,7,1,0,18,18,488650],[15,7,2,0,3,3,83500],[15,8,0,0,32,32,998650],[15,8,0,2,4,4,117150],[15,8,1,0,7,7,181550],[15,8,2,0,7,7,208050],[15,9,0,0,2,2,61500],[15,9,2,0,1,1,27100],[16,0,0,0,42,42,1330400],[16,0,0,2,1,1,21800],[16,0,2,0,36,36,1141950],[16,1,0,0,37,37,1186950],[16,1,0,2,1,1,31800],[16,1,2,0,41,41,1365850],[16,2,0,0,11,11,328900],[16,2,0,2,1,1,40000],[16,2,2,0,12,12,365800],[16,3,0,0,12,12,357300],[16,3,2,0,13,13,381400],[16,3,2,2,1,1,16000],[16,4,0,0,2,2,50100],[16,4,2,0,2,2,58200],[16,5,0,0,26,26,830500],[16,5,0,2,1,1,35600],[16,5,2,0,14,14,507700],[16,6,0,0,22,22,684850],[16,6,0,2,3,3,107600],[16,6,2,0,8,8,250900],[16,7,0,0,20,20,648600],[16,7,2,0,9,9,306700],[16,8,0,0,17,17,505050],[16,8,0,2,2,2,65700],[16,8,2,0,8,8,263150],[16,9,0,0,1,1,26800],[16,9,0,2,1,1,31400],[16,9,2,0,1,1,33400],[17,5,0,0,1,1,25400],[17,5,0,2,1,1,45900],[17,7,0,0,1,1,33200],[17,7,0,2,1,1,52900],[17,8,0,0,2,2,27050],[18,0,1,0,2,2,36000],[18,3,1,0,1,1,18000]]};
+</script>
+<script src="contratos_blackdays.js" defer onload="initContractsPayload()"></script>
+
+<script>
+// ============================================================================
+// ESTADO GLOBAL DEL SIMULADOR
+// ============================================================================
+let DATA = JSON.parse(JSON.stringify(INITIAL_CUBE));
+let CONTRACTS_DB = null;       // Descomprimido desde window.__BD_CONTRACTS_GZ__
+let CUSTOM_CONTRACTS = null;   // Si el usuario carga CSV/TSV propio
+
+const STATE = {
+  selectedReg: new Set(),
+  selectedEst: new Set(),
+  selectedMed: new Set(),
+  selectedCh:  new Set(['sms', 'pregrabada', 'call_center']),
+  excludePayMaster: false,
+  excludePayBits: new Set([1, 2, 4, 8, 16]), // Bancolombia, Nequi, Davivienda, Wompi, PSE
+  chCostOverride: {},   // id -> number
+  chEffOverride:  {},   // id -> % (e.g. 24.5)
+  promo: {
+    discount: 10,
+    minCuotas: 3,
+    days: 7,
+    uplift: 6.0,
+    adopt: 35,
+  },
+  savedScenarios: [],
+};
+
+const PAY_BITS_LABELS = [
+  {bit: 1,  id: 'BANCOLOMBIA', label: 'Bancolombia'},
+  {bit: 2,  id: 'NEQUI',       label: 'Nequi'},
+  {bit: 4,  id: 'DAVIVIENDA',  label: 'Davivienda'},
+  {bit: 8,  id: 'WOMPI',       label: 'Wompi'},
+  {bit: 16, id: 'PSE',         label: 'PSE'},
+];
+
+// ============================================================================
+// FORMATEADORES COP Y UTILIDADES
+// ============================================================================
+function fmtCOP(v) {
+  const n = Math.round(Number(v) || 0);
+  const sign = n < 0 ? '-' : '';
+  return sign + '$' + Math.abs(n).toLocaleString('es-CO');
+}
+function fmtCOPDot(v) {
+  const n = Math.round(Number(v) || 0);
+  const sign = n < 0 ? '-' : '';
+  return sign + '$' + Math.abs(n).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+}
+function fmtInt(v) {
+  return Math.round(Number(v) || 0).toLocaleString('es-CO');
+}
+function fmtPct(v, dec=1) {
+  return (Number(v) || 0).toFixed(dec) + '%';
+}
+function fmtShortCOP(v) {
+  const n = Number(v) || 0;
+  const abs = Math.abs(n);
+  const s = n < 0 ? '-' : '';
+  if (abs >= 1e9) return s + '$' + (abs / 1e9).toFixed(2) + 'B';
+  if (abs >= 1e6) return s + '$' + (abs / 1e6).toFixed(1) + 'M';
+  if (abs >= 1e3) return s + '$' + (abs / 1e3).toFixed(0) + 'K';
+  return s + '$' + Math.round(abs);
+}
+function escHtml(s) {
+  return String(s ?? '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+function getActiveExcludeMask() {
+  if (!STATE.excludePayMaster) return 0;
+  let m = 0;
+  STATE.excludePayBits.forEach(b => { m |= b; });
+  return m;
+}
+function payMaskToText(mask) {
+  if (!mask) return 'SIN POSIBLE PAGO';
+  const arr = [];
+  for (const p of PAY_BITS_LABELS) {
+    if (mask & p.bit) arr.push(p.label);
+  }
+  return arr.join(' | ');
+}
+
+// ============================================================================
+// INICIALIZACIÓN DE FILTROS Y CONTROLES
+// ============================================================================
+function initDefaultSelections() {
+  STATE.selectedReg = new Set(DATA.regionales.map((_, i) => i));
+  STATE.selectedEst = new Set(DATA.estados.map(e => e.idx));
+  STATE.selectedMed = new Set(DATA.medios.map((_, i) => i));
+  STATE.selectedCh  = new Set(['sms', 'pregrabada', 'call_center']);
+  STATE.excludePayMaster = false;
+  STATE.excludePayBits = new Set([1, 2, 4, 8, 16]);
+  STATE.chCostOverride = {};
+  STATE.chEffOverride = {};
+  STATE.promo = { discount: 10, minCuotas: 3, days: 7, uplift: 6.0, adopt: 35 };
+  syncPromoSliders();
+}
+
+function syncPromoSliders() {
+  document.getElementById('slDiscount').value  = STATE.promo.discount;
+  document.getElementById('slMinCuotas').value = STATE.promo.minCuotas;
+  document.getElementById('slDays').value      = STATE.promo.days;
+  document.getElementById('slUplift').value    = STATE.promo.uplift;
+  document.getElementById('slAdopt').value     = STATE.promo.adopt;
+  document.getElementById('valDiscount').textContent  = STATE.promo.discount + '%';
+  document.getElementById('valMinCuotas').textContent = STATE.promo.minCuotas + (STATE.promo.minCuotas === 1 ? ' cuota' : ' cuotas');
+  document.getElementById('valDays').textContent      = STATE.promo.days + (STATE.promo.days === 1 ? ' día' : ' días');
+  document.getElementById('valUplift').textContent    = '+' + Number(STATE.promo.uplift).toFixed(1) + '%';
+  document.getElementById('valAdopt').textContent     = STATE.promo.adopt + '%';
+}
+
+function renderFilterCheckboxes() {
+  // Conteos de referencia (sin exclusión para mostrar tamaño real por categoría)
+  const regCnt = new Array(DATA.regionales.length).fill(0);
+  const estCnt = new Array(DATA.estados.length).fill(0);
+  const medCnt = new Array(DATA.medios.length).fill(0);
+  const exMask = getActiveExcludeMask();
+
+  for (const row of DATA.cube) {
+    const [ri, ei, mi, pm, cnt] = row;
+    if (exMask && (pm & exMask)) continue;
+    regCnt[ri] += cnt;
+    estCnt[ei] += cnt;
+    medCnt[mi] += cnt;
+  }
+
+  // Regionales
+  const regBox = document.getElementById('regBox');
+  regBox.innerHTML = DATA.regionales.map((r, i) => {
+    const chk = STATE.selectedReg.has(i);
+    return `<div class="chk-item ${chk ? 'checked' : ''}">
+      <label><input type="checkbox" ${chk ? 'checked' : ''} onchange="toggleReg(${i}, this.checked)">
+        <span class="chk-lbl" title="${escHtml(r)}">${escHtml(r)}</span>
+      </label>
+      <span class="chk-cnt">${fmtInt(regCnt[i])}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('chkAllReg').checked = (STATE.selectedReg.size === DATA.regionales.length);
+
+  // Estados de cartera
+  const estBox = document.getElementById('estBox');
+  estBox.innerHTML = DATA.estados.map(e => {
+    const chk = STATE.selectedEst.has(e.idx);
+    const dotCls = e.group === 'ADELANTADO' ? 'dot-adel' : (e.group === 'VENCE_HOY' ? 'dot-hoy' : 'dot-atr');
+    return `<div class="chk-item ${chk ? 'checked' : ''}">
+      <label><input type="checkbox" ${chk ? 'checked' : ''} onchange="toggleEst(${e.idx}, this.checked)">
+        <span class="dot-tag ${dotCls}"></span>
+        <span class="chk-lbl" title="${escHtml(e.label)}">${escHtml(e.label)}</span>
+      </label>
+      <span class="chk-cnt">${fmtInt(estCnt[e.idx])}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('chkAllEst').checked = (STATE.selectedEst.size === DATA.estados.length);
+
+  // Medios de pago
+  const medBox = document.getElementById('medBox');
+  medBox.innerHTML = DATA.medios.map((m, i) => {
+    const chk = STATE.selectedMed.has(i);
+    return `<div class="chk-item ${chk ? 'checked' : ''}" style="flex:1 1 155px;">
+      <label><input type="checkbox" ${chk ? 'checked' : ''} onchange="toggleMed(${i}, this.checked)">
+        <span class="chk-lbl">${escHtml(m)}</span>
+      </label>
+      <span class="chk-cnt">${fmtInt(medCnt[i])}</span>
+    </div>`;
+  }).join('');
+  document.getElementById('chkAllMed').checked = (STATE.selectedMed.size === DATA.medios.length);
+}
+
+function toggleReg(i, on) {
+  if (on) STATE.selectedReg.add(i); else STATE.selectedReg.delete(i);
+  updateAll();
+}
+function toggleAllReg(on) {
+  STATE.selectedReg = on ? new Set(DATA.regionales.map((_, i) => i)) : new Set();
+  updateAll();
+}
+function toggleEst(i, on) {
+  if (on) STATE.selectedEst.add(i); else STATE.selectedEst.delete(i);
+  updateAll();
+}
+function toggleAllEst(on) {
+  STATE.selectedEst = on ? new Set(DATA.estados.map(e => e.idx)) : new Set();
+  updateAll();
+}
+function toggleMed(i, on) {
+  if (on) STATE.selectedMed.add(i); else STATE.selectedMed.delete(i);
+  updateAll();
+}
+function toggleAllMed(on) {
+  STATE.selectedMed = on ? new Set(DATA.medios.map((_, i) => i)) : new Set();
+  updateAll();
+}
+
+function presetEstados(mode) {
+  if (mode === 'all') STATE.selectedEst = new Set([0,1,2,3,4,5,6,7,8,9]);
+  else if (mode === 'atraso') STATE.selectedEst = new Set([4,5,6,7,8,9]);
+  else if (mode === 'mora_1_50') STATE.selectedEst = new Set([5,6,7]);
+  else if (mode === 'adelantado') STATE.selectedEst = new Set([0,1,2,3]);
+  updateAll();
+}
+function presetCanales(list) {
+  STATE.selectedCh = new Set(list);
+  updateAll();
+}
+function resetChannelOverrides() {
+  STATE.chCostOverride = {};
+  STATE.chEffOverride = {};
+  updateAll();
+}
+function presetPromo(d, m, days, u, a) {
+  STATE.promo = { discount: d, minCuotas: m, days: days, uplift: u, adopt: a };
+  syncPromoSliders();
+  updateAll();
+}
+function resetAllFilters() {
+  initDefaultSelections();
+  updateAll();
+}
+
+// Exclusión de posibles pagos (Bancolombia, Nequi, Davivienda, Wompi, PSE)
+function toggleMasterPayExclude() {
+  STATE.excludePayMaster = !STATE.excludePayMaster;
+  if (STATE.excludePayMaster && STATE.excludePayBits.size === 0) {
+    STATE.excludePayBits = new Set([1, 2, 4, 8, 16]);
+  }
+  updateAll();
+}
+function toggleSinglePayBit(bit, on) {
+  if (on) STATE.excludePayBits.add(bit); else STATE.excludePayBits.delete(bit);
+  if (STATE.excludePayBits.size > 0) STATE.excludePayMaster = true;
+  else STATE.excludePayMaster = false;
+  updateAll();
+}
+
+function onPromoChange() {
+  STATE.promo.discount  = Number(document.getElementById('slDiscount').value);
+  STATE.promo.minCuotas = Number(document.getElementById('slMinCuotas').value);
+  STATE.promo.days      = Number(document.getElementById('slDays').value);
+  STATE.promo.uplift    = Number(document.getElementById('slUplift').value);
+  STATE.promo.adopt     = Number(document.getElementById('slAdopt').value);
+  syncPromoSliders();
+  updateAll();
+}
+
+function toggleChannel(id, on) {
+  if (on) STATE.selectedCh.add(id); else STATE.selectedCh.delete(id);
+  updateAll();
+}
+function setChannelCost(id, val) {
+  const n = Math.max(0, parseFloat(val));
+  if (!isNaN(n)) STATE.chCostOverride[id] = n;
+  updateAll(true);
+}
+function setChannelEff(id, val) {
+  const n = Math.max(0, Math.min(95, parseFloat(val)));
+  if (!isNaN(n)) STATE.chEffOverride[id] = n;
+  updateAll(true);
+}
+
+// ============================================================================
+// MOTOR FINANCIERO Y DE SIMULACIÓN (CERO DUPLICACIÓN DE CLIENTES)
+// ============================================================================
+function simulateScenario(overrideParams = null) {
+  const promo = overrideParams ? overrideParams.promo : STATE.promo;
+  const exMask = overrideParams && overrideParams.exMask !== undefined ? overrideParams.exMask : getActiveExcludeMask();
+  const selCh  = overrideParams && overrideParams.channels ? overrideParams.channels : STATE.selectedCh;
+
+  // 1) Filtrar hipercubo y calcular baseline real + conteo de posibles pagos en el segmento
+  let totalClients = 0;
+  let validCellClients = 0;
+  let totalValue = 0;
+  let weightedBasePayers = 0;
+  let weightedBaseRev = 0;
+
+  let excludedCount = 0;
+  let excludedValidCell = 0;
+  let excludedValue = 0;
+  const segPayCounts = {1:0, 2:0, 4:0, 8:0, 16:0};
+  let segAnyPay = 0;
+
+  // Acumuladores para desglose por Regional, Estado y Medio
+  const byReg = new Map();
+  const byEst = new Map();
+  const byMed = new Map();
+
+  // Peso para ajuste de afinidad de cada canal
+  const chAffinitySum = {};
+  DATA.canales.forEach(c => { chAffinitySum[c.id] = 0; });
+
+  for (const row of DATA.cube) {
+    const [ri, ei, mi, pm, cnt, vcel, scuota] = row;
+    if (!STATE.selectedReg.has(ri) || !STATE.selectedEst.has(ei) || !STATE.selectedMed.has(mi)) continue;
+
+    // Registrar conteo de posibles pagos dentro de la selección geográfica/estado/medio
+    if (pm > 0) {
+      segAnyPay += cnt;
+      for (const p of PAY_BITS_LABELS) {
+        if (pm & p.bit) segPayCounts[p.bit] += cnt;
+      }
+    }
+
+    if (exMask && (pm & exMask)) {
+      excludedCount += cnt;
+      excludedValidCell += vcel;
+      excludedValue += scuota;
+      continue;
+    }
+
+    const regName = DATA.regionales[ri];
+    const medName = DATA.medios[mi];
+    const estObj  = DATA.estados[ei];
+    const rFac = DATA.reg_factors[regName] || 1.0;
+    const mFac = DATA.med_factors[medName] || 1.0;
+
+    // Efectividad histórica sin campaña calibrada para esta celda
+    const cellBaseEff = Math.min(0.68, Math.max(0.005, estObj.base_eff * rFac * mFac));
+    const cellPayers  = cnt * cellBaseEff;
+    const cellBaseRev = scuota * cellBaseEff;
+
+    totalClients += cnt;
+    validCellClients += vcel;
+    totalValue += scuota;
+    weightedBasePayers += cellPayers;
+    weightedBaseRev += cellBaseRev;
+
+    // Afinidad ponderada de cada canal según regional/rango/medio
+    for (const ch of DATA.canales) {
+      const chMedM = (ch.medio_mult && ch.medio_mult[medName]) ? ch.medio_mult[medName] : 1.0;
+      // En atrasos muy largos (>90d) la respuesta relativa cae; en mora temprana (1-25d) es máxima
+      const estElasticity = ei === 9 ? 0.28 : (ei === 8 ? 0.58 : (ei === 7 ? 0.85 : (ei >= 4 && ei <= 6 ? 1.12 : 0.72)));
+      chAffinitySum[ch.id] += cnt * rFac * chMedM * estElasticity;
+    }
+
+    // Acumuladores por dimensión
+    if (!byReg.has(ri)) byReg.set(ri, { name: regName, cnt: 0, vcel: 0, val: 0, basePayers: 0, baseRev: 0, rFac });
+    const rg = byReg.get(ri);
+    rg.cnt += cnt; rg.vcel += vcel; rg.val += scuota; rg.basePayers += cellPayers; rg.baseRev += cellBaseRev;
+
+    if (!byEst.has(ei)) byEst.set(ei, { idx: ei, name: estObj.short, full: estObj.label, cnt: 0, vcel: 0, val: 0, basePayers: 0, baseRev: 0 });
+    const es = byEst.get(ei);
+    es.cnt += cnt; es.vcel += vcel; es.val += scuota; es.basePayers += cellPayers; es.baseRev += cellBaseRev;
+
+    if (!byMed.has(mi)) byMed.set(mi, { name: medName, cnt: 0, vcel: 0, val: 0, basePayers: 0, baseRev: 0, mFac });
+    const md = byMed.get(mi);
+    md.cnt += cnt; md.vcel += vcel; md.val += scuota; md.basePayers += cellPayers; md.baseRev += cellBaseRev;
+  }
+
+  const avgCuota = totalClients > 0 ? totalValue / totalClients : 0;
+  const baseEff  = totalClients > 0 ? weightedBasePayers / totalClients : 0;
+
+  // 2) Evaluar cada canal (costos, alcance, efectividad histórica del canal, sin duplicación)
+  const durationFactor = Math.min(1.28, Math.max(0.55, Math.pow(promo.days / 7.0, 0.35)));
+  const channelResults = [];
+  const activeChannelObjs = [];
+
+  for (const ch of DATA.canales) {
+    const isOn = selCh.has(ch.id);
+    const contactCount = ch.requires_valid_cell ? validCellClients : totalClients;
+    const reachRatio   = totalClients > 0 ? (contactCount / totalClients) : 0;
+    const unitCost     = (STATE.chCostOverride[ch.id] !== undefined && !overrideParams)
+      ? STATE.chCostOverride[ch.id] : ch.unit_cost;
+    const totalCost    = isOn ? (contactCount * unitCost) : 0;
+
+    // Efectividad histórica del canal contextualizada al segmento (Regional x Rango x Medio)
+    const segAffinity = totalClients > 0 ? (chAffinitySum[ch.id] / totalClients) : 1.0;
+    const defaultIncLift = Math.min(0.45, ch.base_lift * segAffinity * durationFactor);
+    const defaultChTotalEff = Math.min(0.88, 1 - (1 - baseEff) * (1 - defaultIncLift * reachRatio));
+
+    let effectiveChTotalEff = defaultChTotalEff;
+    let incLiftForCombine = defaultIncLift * reachRatio;
+
+    if (STATE.chEffOverride[ch.id] !== undefined && !overrideParams) {
+      effectiveChTotalEff = Math.min(0.92, Math.max(0, STATE.chEffOverride[ch.id] / 100.0));
+      // Despejar lift implícito desde la efectividad manual editada por el usuario
+      if (effectiveChTotalEff > baseEff && baseEff < 0.99) {
+        incLiftForCombine = (effectiveChTotalEff - baseEff) / (1 - baseEff);
+      } else {
+        incLiftForCombine = 0;
+      }
+    }
+
+    const item = {
+      ...ch,
+      isOn,
+      contactCount,
+      reachRatio,
+      unitCost,
+      totalCost,
+      defaultChEffPct: defaultChTotalEff * 100,
+      chEffPct: effectiveChTotalEff * 100,
+      incLift: Math.max(0, Math.min(0.65, incLiftForCombine)),
+      standalonePayers: contactCount * effectiveChTotalEff,
+      standaloneRev: contactCount * effectiveChTotalEff * avgCuota,
+      attributedPayers: 0,
+      attributedRev: 0,
+      attributedIncRev: 0,
+    };
+    channelResults.push(item);
+    if (isOn) activeChannelObjs.push(item);
+  }
+
+  // 3) Combinación probabilística NO ADITIVA de canales seleccionados (sin duplicar clientes)
+  // Ordenamos por lift descendente y aplicamos factor de rendimientos decrecientes por solapamiento
+  const sortedActive = [...activeChannelObjs].sort((a, b) => b.incLift - a.incLift);
+  const overlapDamping = [1.00, 0.78, 0.62, 0.48, 0.38, 0.30];
+
+  let prodNoPayChannels = 1.0;
+  let sumWeights = 0;
+  const chWeights = new Map();
+
+  sortedActive.forEach((ch, idx) => {
+    const damp = overlapDamping[Math.min(idx, overlapDamping.length - 1)];
+    const effTouch = Math.min(0.60, ch.incLift * damp);
+    prodNoPayChannels *= (1 - effTouch);
+    chWeights.set(ch.id, effTouch);
+    sumWeights += effTouch;
+  });
+
+  const channelsCombinedLift = 1 - prodNoPayChannels;
+
+  // 4) Impacto adicional de la promoción Black Days (descuento + duración + incremento efectividad)
+  // Solo aplica si hay al menos 1 canal de comunicación activo (si no hay canales, no hay campaña)
+  const hasCampaign = sortedActive.length > 0 && totalClients > 0;
+  const promoLiftRaw = hasCampaign ? (promo.uplift / 100.0) * durationFactor : 0;
+  // Si el usuario exige muchas cuotas (>6) con poco descuento (<5%), la adopción real se modera un poco; respetamos el slider directo
+  const projEff = hasCampaign
+    ? Math.min(0.92, 1 - (1 - baseEff) * (1 - channelsCombinedLift) * (1 - promoLiftRaw))
+    : baseEff;
+
+  // Clientes únicos impactados (NUNCA suma duplicados entre canales)
+  const impactedClients = hasCampaign
+    ? Math.max(...sortedActive.map(c => c.contactCount))
+    : 0;
+
+  const totalCostCom = sortedActive.reduce((acc, c) => acc + c.totalCost, 0);
+
+  // 5) Cálculo financiero exacto (COP)
+  const recoveredClients = totalClients * projEff;
+  const adoptRatio = hasCampaign ? (promo.adopt / 100.0) : 0;
+  const discRate   = promo.discount / 100.0;
+  const minCuotas  = promo.minCuotas;
+
+  const promoPayers   = recoveredClients * adoptRatio;
+  const regularPayers = recoveredClients * (1 - adoptRatio);
+
+  // Recaudo bruto con campaña:
+  // - Pagadores regulares pagan 1 cuota promedio
+  // - Pagadores que acceden a promo pagan minCuotas cuotas promedio (antes de descuento)
+  const grossRevPromo   = promoPayers * minCuotas * avgCuota;
+  const grossRevRegular = regularPayers * avgCuota;
+  const recaudoBruto    = grossRevPromo + grossRevRegular;
+
+  // DESCUENTOS: calculados ESTRICTAMENTE sobre los pagos de clientes que cumplen la promoción
+  const descuentos = grossRevPromo * discRate;
+  const recaudoPostDesc = recaudoBruto - descuentos;
+  const recaudoNeto     = recaudoPostDesc - totalCostCom;
+
+  // FÓRMULA EXACTA EXIGIDA:
+  // Recaudo incremental neto = Recaudo bruto proyectado con campaña - Descuentos - Costos comunicación - Recaudo esperado sin campaña
+  const recaudoIncrementalNeto = recaudoBruto - descuentos - totalCostCom - weightedBaseRev;
+
+  const crecimientoPct = weightedBaseRev > 0 ? ((recaudoNeto - weightedBaseRev) / weightedBaseRev) * 100 : 0;
+  const totalInversion = totalCostCom + descuentos;
+  const roiPct = totalInversion > 0 ? (recaudoIncrementalNeto / totalInversion) * 100 : (recaudoIncrementalNeto > 0 ? Infinity : 0);
+
+  // Punto de equilibrio:
+  // Ingreso neto por cliente recuperado promedio (ya descontando promo promedio)
+  const netRevPerRecovered = avgCuota * ((1 - adoptRatio) + adoptRatio * minCuotas * (1 - discRate));
+  const breakevenClientsTotal = netRevPerRecovered > 0 ? Math.ceil((weightedBaseRev + totalCostCom) / netRevPerRecovered) : 0;
+  const breakevenAdditionalClients = avgCuota > 0 ? Math.ceil((totalCostCom + descuentos) / avgCuota) : 0;
+  const breakevenValueCOP = totalCostCom + descuentos;
+
+  // Riesgo de canibalización: clientes que igual habrían pagado (weightedBasePayers) que aprovechan el descuento
+  const canibClients = weightedBasePayers * adoptRatio;
+  const canibDiscountOnBaseCuota = canibClients * avgCuota * discRate;
+  const canibDiscountTotalPromo  = canibClients * minCuotas * avgCuota * discRate;
+  const canibExtraCuotasCash     = canibClients * Math.max(0, minCuotas - 1) * avgCuota * (1 - discRate);
+  const canibNetEffect           = canibExtraCuotasCash - canibDiscountOnBaseCuota;
+
+  // Ahorro en costos de comunicación si se excluyen posibles pagos
+  const savedCostIfExcluded = sortedActive.reduce((acc, c) => {
+    const exC = c.requires_valid_cell ? excludedValidCell : excludedCount;
+    return acc + exC * c.unitCost;
+  }, 0);
+
+  // Atribución proporcional de clientes y recaudo por canal (sumando exactamente recoveredClients / recaudoBruto sin duplicar!)
+  const incClientsTotal = Math.max(0, recoveredClients - weightedBasePayers);
+  for (const ch of channelResults) {
+    if (ch.isOn && sumWeights > 0) {
+      const share = (chWeights.get(ch.id) || 0) / sumWeights;
+      ch.attributedPayers = recoveredClients * share;
+      ch.attributedRev    = recaudoNeto * share;
+      ch.attributedIncRev = recaudoIncrementalNeto * share;
+      ch.incClientsShare  = incClientsTotal * share;
+    } else if (ch.isOn) {
+      const share = 1 / Math.max(1, sortedActive.length);
+      ch.attributedPayers = recoveredClients * share;
+      ch.attributedRev    = recaudoNeto * share;
+      ch.attributedIncRev = recaudoIncrementalNeto * share;
+      ch.incClientsShare  = incClientsTotal * share;
+    }
+  }
+
+  // 6) Desgloses por Regional, Estado y Medio para gráficos y conclusiones
+  const liftRatioGlobal = hasCampaign && (1 - baseEff) > 0.001
+    ? (projEff - baseEff) / (1 - baseEff) : 0;
+
+  function enrichDim(mapObj, calcCostPerUnit) {
+    const arr = [];
+    mapObj.forEach(d => {
+      const dBaseEff = d.cnt > 0 ? d.basePayers / d.cnt : 0;
+      const dProjEff = hasCampaign ? Math.min(0.92, 1 - (1 - dBaseEff) * (1 - liftRatioGlobal)) : dBaseEff;
+      const dAvgQ = d.cnt > 0 ? d.val / d.cnt : 0;
+      const dRec  = d.cnt * dProjEff;
+      const dPromoP = dRec * adoptRatio;
+      const dRegP   = dRec * (1 - adoptRatio);
+      const dBruto  = dPromoP * minCuotas * dAvgQ + dRegP * dAvgQ;
+      const dDesc   = (dPromoP * minCuotas * dAvgQ) * discRate;
+      const dCost   = sortedActive.reduce((s, ch) => s + (ch.requires_valid_cell ? d.vcel : d.cnt) * ch.unitCost, 0);
+      const dIncNet = dBruto - dDesc - dCost - d.baseRev;
+      arr.push({
+        ...d,
+        baseEff: dBaseEff * 100,
+        projEff: dProjEff * 100,
+        bruto: dBruto,
+        desc: dDesc,
+        cost: dCost,
+        incNet: dIncNet,
+        roi: (dCost + dDesc) > 0 ? (dIncNet / (dCost + dDesc)) * 100 : (dIncNet > 0 ? 999 : 0),
+      });
+    });
+    return arr;
+  }
+
+  const regStats = enrichDim(byReg).sort((a, b) => b.incNet - a.incNet);
+  const estStats = enrichDim(byEst).sort((a, b) => a.idx - b.idx);
+  const medStats = enrichDim(byMed).sort((a, b) => b.projEff - a.projEff);
+
+  return {
+    hasCampaign,
+    totalClients,
+    validCellClients,
+    totalValue,
+    avgCuota,
+    baseEff: baseEff * 100,
+    projEff: projEff * 100,
+    weightedBasePayers,
+    weightedBaseRev,
+    impactedClients,
+    recoveredClients,
+    promoPayers,
+    regularPayers,
+    recaudoBruto,
+    descuentos,
+    totalCostCom,
+    recaudoPostDesc,
+    recaudoNeto,
+    recaudoIncrementalNeto,
+    crecimientoPct,
+    roiPct,
+    breakevenClientsTotal,
+    breakevenAdditionalClients,
+    breakevenValueCOP,
+    channelResults,
+    activeChannels: sortedActive,
+    channelsCombinedLift: channelsCombinedLift * 100,
+    regStats,
+    estStats,
+    medStats,
+    excludedCount,
+    excludedValidCell,
+    excludedValue,
+    segPayCounts,
+    segAnyPay,
+    savedCostIfExcluded,
+    canibClients,
+    canibDiscountOnBaseCuota,
+    canibDiscountTotalPromo,
+    canibExtraCuotasCash,
+    canibNetEffect,
+  };
+}
+
+// ============================================================================
+// RENDERIZADO DE LA BARRA DE EXCLUSIÓN DE PAGOS
+// ============================================================================
+function renderPayGuard(sim) {
+  const bar = document.getElementById('payGuardBar');
+  const btn = document.getElementById('btnTogglePayGuard');
+  const txt = document.getElementById('payGuardText');
+  const pills = document.getElementById('payChannelPills');
+  const stats = document.getElementById('payGuardStats');
+
+  bar.classList.toggle('active', STATE.excludePayMaster);
+  btn.classList.toggle('active', STATE.excludePayMaster);
+  txt.textContent = STATE.excludePayMaster
+    ? 'EXCLUSIÓN ACTIVA: Posibles pagos omitidos'
+    : 'Excluir clientes con posibles pagos (Bancolombia · Nequi · Davivienda · Wompi · PSE)';
+
+  pills.innerHTML = PAY_BITS_LABELS.map(p => {
+    const on = STATE.excludePayMaster && STATE.excludePayBits.has(p.bit);
+    const cnt = sim.segPayCounts[p.bit] || 0;
+    return `<label class="pay-pill ${on ? 'checked' : ''}">
+      <input type="checkbox" ${on ? 'checked' : ''} onchange="toggleSinglePayBit(${p.bit}, this.checked)">
+      <span>${p.label} (${fmtInt(cnt)})</span>
+    </label>`;
+  }).join('');
+
+  if (STATE.excludePayMaster) {
+    stats.innerHTML = `<strong>${fmtInt(sim.excludedCount)} clientes excluidos</strong> (${fmtCOP(sim.excludedValue)} en cuotas) · Ahorro en envíos: <strong>${fmtCOP(sim.savedCostIfExcluded)}</strong>`;
+  } else {
+    stats.innerHTML = `Detectados en selección actual: <strong>${fmtInt(sim.segAnyPay)} clientes</strong> con posible pago pendiente de cruce · Clic para excluirlos de la simulación y los Excel`;
+  }
+}
+
+// ============================================================================
+// RENDERIZADO DE CANALES (MÓDULO 2)
+// ============================================================================
+function renderChannels(sim, keepFocus=false) {
+  const listEl = document.getElementById('channelList');
+  if (!keepFocus) {
+    listEl.innerHTML = sim.channelResults.map(ch => {
+      const effVal = (STATE.chEffOverride[ch.id] !== undefined)
+        ? STATE.chEffOverride[ch.id].toFixed(1)
+        : ch.chEffPct.toFixed(1);
+      return `<div class="ch-row ${ch.isOn ? 'active' : ''}" id="chRow_${ch.id}">
+        <div class="ch-top">
+          <label class="ch-check-wrap">
+            <input type="checkbox" ${ch.isOn ? 'checked' : ''} onchange="toggleChannel('${ch.id}', this.checked)">
+            <div class="ch-color-bar" style="background:${ch.color}"></div>
+            <div>
+              <div class="ch-name">${escHtml(ch.name)}</div>
+              <div class="ch-desc">${escHtml(ch.desc)}</div>
+            </div>
+          </label>
+          <div class="ch-inputs">
+            <div class="mini-inp-grp">
+              <label>Costo Unit. ($)</label>
+              <input type="number" class="mini-inp" step="0.1" min="0" value="${ch.unitCost}" onchange="setChannelCost('${ch.id}', this.value)" oninput="setChannelCost('${ch.id}', this.value)">
+            </div>
+            <div class="mini-inp-grp">
+              <label>Efectiv. (%)</label>
+              <input type="number" class="mini-inp" step="0.5" min="0" max="95" value="${effVal}" onchange="setChannelEff('${ch.id}', this.value)">
+            </div>
+          </div>
+        </div>
+        <div class="ch-metrics">
+          <div class="ch-m">Clientes a contactar<strong id="cm_cnt_${ch.id}">${fmtInt(ch.contactCount)}</strong></div>
+          <div class="ch-m">Costo total canal<strong id="cm_cost_${ch.id}" style="color:${ch.totalCost>0?'#B91C1C':'#047857'}">${fmtCOP(ch.totalCost)}</strong></div>
+          <div class="ch-m">Clientes pagadores<strong id="cm_pay_${ch.id}">${ch.isOn ? fmtInt(ch.attributedPayers) : '—'}</strong></div>
+          <div class="ch-m">Recaudo atribuido<strong id="cm_rev_${ch.id}">${ch.isOn ? fmtCOP(ch.attributedRev) : '—'}</strong></div>
+        </div>
+      </div>`;
+    }).join('');
+  } else {
+    for (const ch of sim.channelResults) {
+      const row = document.getElementById('chRow_' + ch.id);
+      if (row) row.classList.toggle('active', ch.isOn);
+      const e1 = document.getElementById('cm_cnt_' + ch.id);
+      const e2 = document.getElementById('cm_cost_' + ch.id);
+      const e3 = document.getElementById('cm_pay_' + ch.id);
+      const e4 = document.getElementById('cm_rev_' + ch.id);
+      if (e1) e1.textContent = fmtInt(ch.contactCount);
+      if (e2) { e2.textContent = fmtCOP(ch.totalCost); e2.style.color = ch.totalCost > 0 ? '#B91C1C' : '#047857'; }
+      if (e3) e3.textContent = ch.isOn ? fmtInt(ch.attributedPayers) : '—';
+      if (e4) e4.textContent = ch.isOn ? fmtCOP(ch.attributedRev) : '—';
+    }
+  }
+
+  const banner = document.getElementById('nonDupBanner');
+  if (sim.activeChannels.length === 0) {
+    banner.innerHTML = '<span>⚠️ <strong>Ningún canal seleccionado.</strong> Activa al menos un canal de comunicación para simular la campaña.</span>';
+  } else {
+    banner.innerHTML = `<span>✅ <strong>Modelo sin duplicación (${sim.activeChannels.length} canal${sim.activeChannels.length>1?'es':''}):</strong> Se impactan <strong>${fmtInt(sim.impactedClients)} clientes únicos</strong> con combinación probabilística amortiguada (sin sumar porcentajes ni duplicar clientes).</span>
+      <span>Costo total comunicación: <strong>${fmtCOP(sim.totalCostCom)}</strong></span>`;
+  }
+}
+
+// ============================================================================
+// RENDERIZADO DE KPIs (MÓDULOS 1 Y 4)
+// ============================================================================
+function renderKPIs(sim) {
+  // Resumen Módulo 1
+  document.getElementById('segClients').textContent = fmtInt(sim.totalClients);
+  const pctCel = sim.totalClients > 0 ? ((sim.validCellClients / sim.totalClients) * 100).toFixed(1) : '0.0';
+  document.getElementById('segClientsSub').textContent = `Cel. válido 10d: ${fmtInt(sim.validCellClients)} (${pctCel}%)`;
+  document.getElementById('segValue').textContent = fmtCOP(sim.totalValue);
+  document.getElementById('segAvgCuota').textContent = fmtCOP(sim.avgCuota);
+  document.getElementById('segBaseEff').textContent = fmtPct(sim.baseEff, 1);
+  document.getElementById('segBaseRev').textContent = fmtCOP(sim.weightedBaseRev);
+  document.getElementById('segBasePayers').textContent = `${fmtInt(sim.weightedBasePayers)} clientes habituales`;
+
+  // Héroes Módulo 4
+  const hero = document.getElementById('heroIncNeto');
+  hero.classList.remove('pos', 'warn', 'neg');
+  if (sim.recaudoIncrementalNeto > 0 && (sim.roiPct >= 100 || sim.roiPct === Infinity) && sim.crecimientoPct >= 8) hero.classList.add('pos');
+  else if (sim.recaudoIncrementalNeto > 0) hero.classList.add('warn');
+  else hero.classList.add('neg');
+
+  document.getElementById('kpiIncNeto').textContent = (sim.recaudoIncrementalNeto >= 0 ? '+' : '') + fmtCOP(sim.recaudoIncrementalNeto);
+  document.getElementById('kpiIncNetoSub').textContent = sim.recaudoIncrementalNeto > 0
+    ? `Genera +${fmtCOP(sim.recaudoIncrementalNeto)} adicionales netos`
+    : 'No compensa descuentos y costos frente a no hacer campaña';
+
+  document.getElementById('kpiRecNeto').textContent = fmtCOP(sim.recaudoNeto);
+  document.getElementById('kpiCrecSub').textContent = `Crecimiento: ${sim.crecimientoPct >= 0 ? '+' : ''}${fmtPct(sim.crecimientoPct, 1)} vs habitual`;
+
+  document.getElementById('kpiROI').textContent = sim.roiPct === Infinity ? '∞ (Sin costo)' : fmtPct(sim.roiPct, 1);
+  document.getElementById('kpiROISub').textContent = `Inversión total (Com.+Dcto): ${fmtCOP(sim.totalCostCom + sim.descuentos)}`;
+
+  document.getElementById('kpiBreakeven').textContent = fmtInt(sim.breakevenAdditionalClients) + ' ctos';
+  document.getElementById('kpiBreakevenSub').textContent = `Mínimo ${fmtCOP(sim.breakevenValueCOP)} para cubrir inversión`;
+
+  // 10 KPIs detallados
+  document.getElementById('kpiImpactados').textContent = fmtInt(sim.impactedClients);
+  document.getElementById('kpiImpactadosSub').textContent = `${sim.activeChannels.length} canal(es) activos · 0 duplicados`;
+  document.getElementById('kpiRecuperados').textContent = fmtInt(sim.recoveredClients);
+  document.getElementById('kpiRecupSub').textContent = `${fmtInt(sim.promoPayers)} promo (${STATE.promo.minCuotas}c) · ${fmtInt(sim.regularPayers)} regular`;
+  document.getElementById('kpiEffHist').textContent = fmtPct(sim.baseEff, 1);
+  document.getElementById('kpiEffProy').textContent = fmtPct(sim.projEff, 1);
+  const dEff = sim.projEff - sim.baseEff;
+  document.getElementById('kpiEffDelta').textContent = `${dEff >= 0 ? '+' : ''}${dEff.toFixed(1)} pp sobre línea base`;
+  document.getElementById('kpiRecBase').textContent = fmtCOP(sim.weightedBaseRev);
+  document.getElementById('kpiRecBruto').textContent = fmtCOP(sim.recaudoBruto);
+  document.getElementById('kpiDescuentos').textContent = fmtCOP(sim.descuentos);
+  document.getElementById('kpiDescSub').textContent = `${STATE.promo.discount}% sobre ${fmtInt(sim.promoPayers)} clientes promo`;
+  document.getElementById('kpiCostoCom').textContent = fmtCOP(sim.totalCostCom);
+  document.getElementById('kpiCostoSub').textContent = sim.impactedClients > 0
+    ? `Costo medio/impactado: ${fmtCOP(sim.totalCostCom / sim.impactedClients)}`
+    : 'Sin envíos activos';
+  document.getElementById('kpiRecPostDesc').textContent = fmtCOP(sim.recaudoPostDesc);
+  document.getElementById('kpiCrecPct').textContent = (sim.crecimientoPct >= 0 ? '+' : '') + fmtPct(sim.crecimientoPct, 1);
+
+  document.getElementById('formulaNumbers').innerHTML =
+    `${fmtCOP(sim.recaudoBruto)} – ${fmtCOP(sim.descuentos)} – ${fmtCOP(sim.totalCostCom)} – ${fmtCOP(sim.weightedBaseRev)} = <strong>${fmtCOP(sim.recaudoIncrementalNeto)}</strong>`;
+}
+
+// ============================================================================
+// MOTOR DE GRÁFICOS SVG EJECUTIVOS (8 GRÁFICOS INTERACTIVOS 100% OFFLINE)
+// ============================================================================
+const tipEl = document.getElementById('svgTip');
+function showTip(evt, html) {
+  tipEl.innerHTML = html;
+  tipEl.style.display = 'block';
+  const x = Math.min(window.innerWidth - 295, evt.clientX + 14);
+  const y = Math.max(10, evt.clientY - 46);
+  tipEl.style.left = x + 'px';
+  tipEl.style.top = y + 'px';
+}
+function hideTip() { tipEl.style.display = 'none'; }
+
+function renderVerticalBarChart(elId, items, valueFmt, isPct=false) {
+  const el = document.getElementById(elId);
+  if (!items.length) {
+    el.innerHTML = '<div style="padding:50px 10px;text-align:center;color:#94A3B8;">Sin datos para la selección actual</div>';
+    return;
+  }
+  const W = 560, H = 228, padL = 62, padR = 16, padT = 26, padB = 46;
+  const chartW = W - padL - padR, chartH = H - padT - padB;
+  const maxVal = Math.max(1, ...items.map(d => Math.abs(d.val)));
+  const minVal = Math.min(0, ...items.map(d => d.val));
+  const span = (maxVal - minVal) || 1;
+  const zeroY = padT + (maxVal / span) * chartH;
+
+  const slotW = chartW / items.length;
+  const barW = Math.min(54, slotW * 0.58);
+
+  let grid = '';
+  for (let i = 0; i <= 4; i++) {
+    const v = minVal + (span * i / 4);
+    const y = padT + ((maxVal - v) / span) * chartH;
+    grid += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#E2E8F0" stroke-dasharray="3,3"/>`;
+    grid += `<text x="${padL-6}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-size="10" fill="#64748B">${isPct ? v.toFixed(0)+'%' : fmtShortCOP(v)}</text>`;
+  }
+
+  let bars = '';
+  items.forEach((d, idx) => {
+    const cx = padL + slotW * idx + slotW / 2;
+    const x = cx - barW / 2;
+    const yVal = padT + ((maxVal - d.val) / span) * chartH;
+    const yTop = Math.min(yVal, zeroY);
+    const h = Math.max(2, Math.abs(zeroY - yVal));
+    const lblY = d.val >= 0 ? yTop - 6 : yTop + h + 13;
+    const tipText = `<strong>${escHtml(d.label)}</strong><br>${valueFmt(d.val)}${d.extra ? '<br>'+escHtml(d.extra) : ''}`;
+    bars += `<rect x="${x.toFixed(1)}" y="${yTop.toFixed(1)}" width="${barW.toFixed(1)}" height="${h.toFixed(1)}" rx="5" fill="${d.color}" style="cursor:pointer"
+      onmousemove="showTip(event, '${tipText.replace(/'/g, "\\'")}')" onmouseleave="hideTip()"/>`;
+    bars += `<text x="${cx.toFixed(1)}" y="${lblY.toFixed(1)}" text-anchor="middle" font-size="10.5" font-weight="800" fill="#0F172A">${isPct ? d.val.toFixed(1)+'%' : fmtShortCOP(d.val)}</text>`;
+    // Etiqueta X (2 líneas si larga)
+    const parts = d.label.length > 14 ? [d.label.slice(0,13)+'…'] : [d.label];
+    bars += `<text x="${cx.toFixed(1)}" y="${H-16}" text-anchor="middle" font-size="10.5" font-weight="700" fill="#334155">${escHtml(parts[0])}</text>`;
+  });
+
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="225">
+    ${grid}
+    <line x1="${padL}" y1="${zeroY.toFixed(1)}" x2="${W-padR}" y2="${zeroY.toFixed(1)}" stroke="#94A3B8" stroke-width="1.2"/>
+    ${bars}
+  </svg>`;
+}
+
+function renderHorizontalBarChart(elId, items, valueFmt) {
+  const el = document.getElementById(elId);
+  if (!items.length) {
+    el.innerHTML = '<div style="padding:50px 10px;text-align:center;color:#94A3B8;">Sin datos para la selección actual</div>';
+    return;
+  }
+  const rowH = 24;
+  const W = 560, padL = 148, padR = 88, padT = 10, padB = 12;
+  const H = Math.max(210, padT + padB + items.length * rowH);
+  const chartW = W - padL - padR;
+  const maxAbs = Math.max(1, ...items.map(d => Math.abs(d.val)));
+
+  let rows = '';
+  items.forEach((d, idx) => {
+    const y = padT + idx * rowH;
+    const bw = Math.max(3, (Math.abs(d.val) / maxAbs) * chartW);
+    const col = d.val >= 0 ? (d.color || '#1D3E7A') : '#DC2626';
+    const tipText = `<strong>${escHtml(d.label)}</strong><br>${valueFmt(d.val)}${d.extra ? '<br>'+escHtml(d.extra) : ''}`;
+    const shortLbl = d.label.length > 20 ? d.label.slice(0, 19) + '…' : d.label;
+    rows += `<text x="${padL-8}" y="${y+15}" text-anchor="end" font-size="10.5" font-weight="700" fill="#334155">${escHtml(shortLbl)}</text>`;
+    rows += `<rect x="${padL}" y="${y+4}" width="${chartW}" height="14" rx="4" fill="#E2E8F0"/>`;
+    rows += `<rect x="${padL}" y="${y+4}" width="${bw.toFixed(1)}" height="14" rx="4" fill="${col}" style="cursor:pointer"
+      onmousemove="showTip(event, '${tipText.replace(/'/g, "\\'")}')" onmouseleave="hideTip()"/>`;
+    rows += `<text x="${(padL + bw + 6).toFixed(1)}" y="${y+15}" font-size="10.2" font-weight="800" fill="${d.val>=0?'#0F172A':'#B91C1C'}">${fmtShortCOP(d.val)}</text>`;
+  });
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="${Math.min(265, H)}">${rows}</svg>`;
+}
+
+function renderGroupedPctChart(elId, items) {
+  const el = document.getElementById(elId);
+  if (!items.length) {
+    el.innerHTML = '<div style="padding:50px 10px;text-align:center;color:#94A3B8;">Sin datos para la selección actual</div>';
+    return;
+  }
+  const W = 560, H = 235, padL = 42, padR = 14, padT = 26, padB = 54;
+  const chartW = W - padL - padR, chartH = H - padT - padB;
+  const maxVal = Math.max(20, ...items.map(d => Math.max(d.base, d.proj))) * 1.12;
+  const slotW = chartW / items.length;
+  const bw = Math.min(20, slotW * 0.34);
+
+  let grid = '';
+  for (let i = 0; i <= 4; i++) {
+    const v = (maxVal * i / 4);
+    const y = padT + chartH - (v / maxVal) * chartH;
+    grid += `<line x1="${padL}" y1="${y.toFixed(1)}" x2="${W-padR}" y2="${y.toFixed(1)}" stroke="#E2E8F0" stroke-dasharray="3,3"/>`;
+    grid += `<text x="${padL-5}" y="${(y+3.5).toFixed(1)}" text-anchor="end" font-size="9.5" fill="#64748B">${v.toFixed(0)}%</text>`;
+  }
+
+  let bars = '';
+  items.forEach((d, idx) => {
+    const cx = padL + slotW * idx + slotW / 2;
+    const h1 = Math.max(1.5, (d.base / maxVal) * chartH);
+    const h2 = Math.max(1.5, (d.proj / maxVal) * chartH);
+    const y1 = padT + chartH - h1;
+    const y2 = padT + chartH - h2;
+    const tip = `<strong>${escHtml(d.full || d.label)}</strong><br>Histórica: ${d.base.toFixed(1)}%<br>Proyectada: ${d.proj.toFixed(1)}% (+${(d.proj-d.base).toFixed(1)} pp)<br>Clientes: ${fmtInt(d.cnt)}`;
+    bars += `<rect x="${(cx - bw - 1.5).toFixed(1)}" y="${y1.toFixed(1)}" width="${bw.toFixed(1)}" height="${h1.toFixed(1)}" rx="3" fill="#94A3B8" style="cursor:pointer"
+      onmousemove="showTip(event, '${tip.replace(/'/g, "\\'")}')" onmouseleave="hideTip()"/>`;
+    bars += `<rect x="${(cx + 1.5).toFixed(1)}" y="${y2.toFixed(1)}" width="${bw.toFixed(1)}" height="${h2.toFixed(1)}" rx="3" fill="#1D3E7A" style="cursor:pointer"
+      onmousemove="showTip(event, '${tip.replace(/'/g, "\\'")}')" onmouseleave="hideTip()"/>`;
+    bars += `<text x="${(cx + 1.5 + bw/2).toFixed(1)}" y="${(y2 - 4).toFixed(1)}" text-anchor="middle" font-size="9" font-weight="800" fill="#1D3E7A">${d.proj.toFixed(0)}%</text>`;
+    const rot = items.length > 5 ? ` transform="rotate(-24 ${cx.toFixed(1)} ${H-28})"` : '';
+    bars += `<text x="${cx.toFixed(1)}" y="${H-26}" text-anchor="${items.length>5?'end':'middle'}" font-size="9.5" font-weight="700" fill="#334155"${rot}>${escHtml(d.label)}</text>`;
+  });
+
+  // Leyenda
+  const leg = `<rect x="${W-205}" y="5" width="10" height="10" rx="2" fill="#94A3B8"/><text x="${W-191}" y="14" font-size="10" font-weight="700" fill="#475569">Histórica</text>
+               <rect x="${W-125}" y="5" width="10" height="10" rx="2" fill="#1D3E7A"/><text x="${W-111}" y="14" font-size="10" font-weight="700" fill="#1D3E7A">Con Campaña</text>`;
+
+  el.innerHTML = `<svg viewBox="0 0 ${W} ${H}" width="100%" height="232">${leg}${grid}${bars}</svg>`;
+}
+
+function renderAllCharts(sim) {
+  // 1. Recaudo sin campaña vs con campaña
+  renderVerticalBarChart('ch1', [
+    { label: 'Sin Campaña', val: sim.weightedBaseRev, color: '#64748B', extra: fmtInt(sim.weightedBasePayers) + ' clientes' },
+    { label: 'Bruto Campaña', val: sim.recaudoBruto, color: '#2563EB', extra: fmtInt(sim.recoveredClients) + ' clientes' },
+    { label: 'Post-Descuento', val: sim.recaudoPostDesc, color: '#0EA5E9', extra: 'Dctos: ' + fmtCOP(sim.descuentos) },
+    { label: 'Neto Final', val: sim.recaudoNeto, color: '#059669', extra: 'Incr. neto: ' + fmtCOP(sim.recaudoIncrementalNeto) },
+  ], fmtCOP, false);
+
+  // 2. Efectividad histórica vs proyectada
+  renderVerticalBarChart('ch2', [
+    { label: 'Sin Campaña', val: sim.baseEff, color: '#64748B', extra: fmtInt(sim.weightedBasePayers) + ' pagadores' },
+    { label: 'Con Canales', val: Math.min(92, sim.baseEff + (100 - sim.baseEff) * (sim.channelsCombinedLift / 100)), color: '#2563EB', extra: 'Efecto canales sin duplicar' },
+    { label: 'Total Black Days', val: sim.projEff, color: '#059669', extra: fmtInt(sim.recoveredClients) + ' pagadores' },
+  ], v => fmtPct(v, 1), true);
+
+  // 3. Costo por canal de comunicación
+  const chCostItems = sim.channelResults.filter(c => c.isOn).map(c => ({
+    label: c.short, val: c.totalCost, color: c.color,
+    extra: `${fmtInt(c.contactCount)} contactos × $${c.unitCost}`
+  }));
+  renderVerticalBarChart('ch3', chCostItems, fmtCOP, false);
+
+  // 4. Recaudo proyectado atribuido por canal
+  const chRevItems = sim.channelResults.filter(c => c.isOn).map(c => ({
+    label: c.short, val: c.attributedRev, color: c.color,
+    extra: `${fmtInt(c.attributedPayers)} clientes atribuidos`
+  }));
+  renderVerticalBarChart('ch4', chRevItems, fmtCOP, false);
+
+  // 5. Valor de descuentos y costos vs recaudo adicional generado
+  const recAdicBruto = sim.recaudoBruto - sim.weightedBaseRev;
+  renderVerticalBarChart('ch5', [
+    { label: 'Adic. Bruto', val: recAdicBruto, color: '#1D3E7A', extra: 'Bruto campaña – Línea base' },
+    { label: 'Descuentos', val: sim.descuentos, color: '#F59E0B', extra: `${STATE.promo.discount}% a ${fmtInt(sim.promoPayers)} ctos promo` },
+    { label: 'Costo Canales', val: sim.totalCostCom, color: '#DC2626', extra: `${sim.activeChannels.length} canal(es)` },
+    { label: 'Incr. Neto', val: sim.recaudoIncrementalNeto, color: sim.recaudoIncrementalNeto >= 0 ? '#059669' : '#B91C1C', extra: 'Resultado financiero final' },
+  ], fmtCOP, false);
+
+  // 6. Recaudo incremental por regional (Top 10)
+  const topReg = sim.regStats.slice(0, 10).map(r => ({
+    label: r.name, val: r.incNet, color: r.incNet >= 0 ? '#1D3E7A' : '#DC2626',
+    extra: `Clientes: ${fmtInt(r.cnt)} · Ef: ${r.baseEff.toFixed(1)}% → ${r.projEff.toFixed(1)}%`
+  }));
+  renderHorizontalBarChart('ch6', topReg, fmtCOP);
+
+  // 7. Efectividad por rango de atraso o adelanto
+  const estItems = sim.estStats.map(e => ({
+    label: e.name, full: e.full, base: e.baseEff, proj: e.projEff, cnt: e.cnt
+  }));
+  renderGroupedPctChart('ch7', estItems);
+
+  // 8. Efectividad por medio de pago
+  const medItems = sim.medStats.map(m => ({
+    label: m.name, full: m.name, base: m.baseEff, proj: m.projEff, cnt: m.cnt
+  }));
+  renderGroupedPctChart('ch8', medItems);
+}
+
+// ============================================================================
+// TABLA 3 ESCENARIOS (CONSERVADOR / MODERADO / OPTIMISTA) + COMPARADOR
+// ============================================================================
+function renderThreeScenarios(simMod) {
+  const simCons = simulateScenario({
+    promo: {
+      ...STATE.promo,
+      uplift: Math.max(0, STATE.promo.uplift * 0.65),
+      adopt:  Math.max(0, Math.round(STATE.promo.adopt * 0.72)),
+    }
+  });
+  const simOpt = simulateScenario({
+    promo: {
+      ...STATE.promo,
+      uplift: Math.min(25, STATE.promo.uplift * 1.35),
+      adopt:  Math.min(100, Math.round(STATE.promo.adopt * 1.25)),
+    }
+  });
+
+  const rows = [
+    { name: '🛡️ Conservador', s: simCons, hi: false },
+    { name: '🎯 Moderado (Configuración Actual)', s: simMod, hi: true },
+    { name: '🚀 Optimista', s: simOpt, hi: false },
+  ];
+  document.getElementById('scenariosTbody').innerHTML = rows.map(r => {
+    const s = r.s;
+    const roiStr = s.roiPct === Infinity ? '∞' : fmtPct(s.roiPct, 1);
+    const incColor = s.recaudoIncrementalNeto >= 0 ? '#047857' : '#B91C1C';
+    return `<tr class="${r.hi ? 'highlight-row' : ''}">
+      <td>${r.name}</td>
+      <td class="num">${fmtPct(s.projEff, 1)}</td>
+      <td class="num">${fmtInt(s.recoveredClients)}</td>
+      <td class="num">${fmtCOP(s.recaudoBruto)}</td>
+      <td class="num" style="color:#B45309">${fmtCOP(s.descuentos)}</td>
+      <td class="num" style="color:#B91C1C">${fmtCOP(s.totalCostCom)}</td>
+      <td class="num">${fmtCOP(s.recaudoNeto)}</td>
+      <td class="num" style="color:${incColor};font-weight:800">${s.recaudoIncrementalNeto>=0?'+':''}${fmtCOP(s.recaudoIncrementalNeto)}</td>
+      <td class="num">${s.crecimientoPct>=0?'+':''}${fmtPct(s.crecimientoPct, 1)}</td>
+      <td class="num" style="font-weight:800">${roiStr}</td>
+    </tr>`;
+  }).join('');
+}
+
+function saveCurrentScenario() {
+  const sim = simulateScenario();
+  const idx = STATE.savedScenarios.length + 1;
+  const regLabel = STATE.selectedReg.size === DATA.regionales.length
+    ? 'Todas Reg.' : `${STATE.selectedReg.size} Reg.`;
+  const estLabel = STATE.selectedEst.size === DATA.estados.length
+    ? 'Toda Cartera' : `${STATE.selectedEst.size} Rangos`;
+  STATE.savedScenarios.push({
+    id: Date.now(),
+    name: `Escenario #${idx} (${regLabel} · ${estLabel})`,
+    channels: sim.activeChannels.map(c => c.short).join(' + ') || 'Sin canal',
+    promo: `${STATE.promo.discount}% · ${STATE.promo.minCuotas}c · ${STATE.promo.days}d`,
+    exclPay: STATE.excludePayMaster ? `Sí (-${fmtInt(sim.excludedCount)})` : 'No',
+    clients: sim.totalClients,
+    costCom: sim.totalCostCom,
+    desc: sim.descuentos,
+    incNet: sim.recaudoIncrementalNeto,
+    roi: sim.roiPct,
+  });
+  renderSavedScenarios();
+}
+function removeSavedScenario(id) {
+  STATE.savedScenarios = STATE.savedScenarios.filter(x => x.id !== id);
+  renderSavedScenarios();
+}
+function clearSavedScenarios() {
+  STATE.savedScenarios = [];
+  renderSavedScenarios();
+}
+function renderSavedScenarios() {
+  const tb = document.getElementById('savedTbody');
+  if (!STATE.savedScenarios.length) {
+    tb.innerHTML = '<tr><td colspan="10" style="text-align:center;color:#64748B;padding:14px;">Haz clic en <strong>"📌 Guardar configuración actual"</strong> para comparar diferentes combinaciones de descuento, cuotas, regionales y canales lado a lado.</td></tr>';
+    return;
+  }
+  const bestInc = Math.max(...STATE.savedScenarios.map(x => x.incNet));
+  tb.innerHTML = STATE.savedScenarios.map(x => {
+    const isBest = x.incNet === bestInc && x.incNet > 0;
+    const roiStr = x.roi === Infinity ? '∞' : fmtPct(x.roi, 1);
+    return `<tr class="${isBest ? 'highlight-row' : ''}">
+      <td>${isBest ? '🏆 ' : ''}${escHtml(x.name)}</td>
+      <td>${escHtml(x.channels)}</td>
+      <td class="ctr">${escHtml(x.promo)}</td>
+      <td class="ctr">${escHtml(x.exclPay)}</td>
+      <td class="num">${fmtInt(x.clients)}</td>
+      <td class="num">${fmtCOP(x.costCom)}</td>
+      <td class="num">${fmtCOP(x.desc)}</td>
+      <td class="num" style="font-weight:800;color:${x.incNet>=0?'#047857':'#B91C1C'}">${x.incNet>=0?'+':''}${fmtCOP(x.incNet)}</td>
+      <td class="num" style="font-weight:800">${roiStr}</td>
+      <td class="ctr"><button class="btn btn-outline btn-sm" onclick="removeSavedScenario(${x.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================================
+// MÓDULO 6: MOTOR DE ANÁLISIS, SEMAFORIZACIÓN Y CONCLUSIONES AUTOMÁTICAS
+// ============================================================================
+function renderAutomaticAnalysis(sim) {
+  const semBox = document.getElementById('semaphoreBox');
+  const grid = document.getElementById('insightsGrid');
+
+  // 1) Semáforo de viabilidad
+  let semCls = 'sem-red', semIcon = '🔴', semTitle = 'NO VIABLE — Campaña con recaudo incremental negativo';
+  let semDesc = `Con la configuración actual, los descuentos (${fmtCOP(sim.descuentos)}) y costos de comunicación (${fmtCOP(sim.totalCostCom)}) superan el recaudo adicional generado, dejando un resultado neto de ${fmtCOP(sim.recaudoIncrementalNeto)}.`;
+
+  if (!sim.hasCampaign) {
+    semCls = 'sem-yellow'; semIcon = '🟡';
+    semTitle = 'SIN CAMPAÑA ACTIVA — Selecciona clientes y al menos un canal';
+    semDesc = 'Activa al menos una regional, un rango de cartera y un canal de comunicación para evaluar la viabilidad económica.';
+  } else if (sim.recaudoIncrementalNeto > 0 && (sim.roiPct >= 100 || sim.roiPct === Infinity) && sim.crecimientoPct >= 8) {
+    semCls = 'sem-green'; semIcon = '🟢';
+    semTitle = 'VIABLE Y FAVORABLE — Estrategia recomendada para Gerencia';
+    semDesc = `La campaña genera un recaudo incremental neto de +${fmtCOP(sim.recaudoIncrementalNeto)} (+${fmtPct(sim.crecimientoPct, 1)} sobre el recaudo habitual), con ROI de ${sim.roiPct === Infinity ? '∞ (sin costo directo)' : fmtPct(sim.roiPct, 1)}. Los ingresos adicionales compensan ampliamente descuentos y costos de contacto.`;
+  } else if (sim.recaudoIncrementalNeto > 0) {
+    semCls = 'sem-yellow'; semIcon = '🟡';
+    semTitle = 'RESULTADOS LIMITADOS — Requiere ajustes para maximizar margen';
+    semDesc = `El recaudo incremental neto es positivo (+${fmtCOP(sim.recaudoIncrementalNeto)}), pero el retorno sobre inversión (${fmtPct(sim.roiPct, 1)}) o el crecimiento (+${fmtPct(sim.crecimientoPct, 1)}) es estrecho. Optimiza el porcentaje de descuento, exige ≥3 cuotas o prioriza canales de menor costo unitario.`;
+  }
+  semBox.className = 'semaphore-banner ' + semCls;
+  semBox.innerHTML = `<div class="sem-light">${semIcon}</div><div><div class="sem-title">${semTitle}</div><div class="sem-desc">${semDesc}</div></div>`;
+
+  // 2) Simulación interna de sensibilidad de descuento (0%, 5%, 10%, 15%, 20%) para recomendar el óptimo
+  const testDiscs = [0, 5, 10, 15, 20];
+  let bestDisc = { d: STATE.promo.discount, inc: sim.recaudoIncrementalNeto, roi: sim.roiPct };
+  for (const d of testDiscs) {
+    // Elasticidad realista: mayor descuento incrementa adopción pero también erosión por descuento
+    const adjAdopt = d === 0 ? 0 : Math.min(85, Math.round(STATE.promo.adopt * (0.65 + (d / Math.max(5, STATE.promo.discount || 10)) * 0.35)));
+    const adjUplift = d === 0 ? Math.max(0, STATE.promo.uplift * 0.3) : Math.min(20, STATE.promo.uplift * (0.75 + (d / Math.max(5, STATE.promo.discount || 10)) * 0.25));
+    const sTest = simulateScenario({ promo: { ...STATE.promo, discount: d, adopt: adjAdopt, uplift: adjUplift } });
+    if (sTest.recaudoIncrementalNeto > bestDisc.inc) {
+      bestDisc = { d, inc: sTest.recaudoIncrementalNeto, roi: sTest.roiPct };
+    }
+  }
+
+  // 3) Evaluar eficiencia por canal (standalone)
+  const chEval = DATA.canales.map(c => {
+    const s1 = simulateScenario({ channels: new Set([c.id]) });
+    const ratio = s1.totalCostCom > 0 ? (s1.recaudoIncrementalNeto / s1.totalCostCom) : (s1.recaudoIncrementalNeto > 0 ? 9999 : 0);
+    return { ...c, inc: s1.recaudoIncrementalNeto, cost: s1.totalCostCom, ratio, eff: s1.projEff };
+  }).sort((a, b) => b.inc - a.inc);
+
+  const bestPaidCh = chEval.filter(c => c.unit_cost > 0).sort((a, b) => b.ratio - a.ratio)[0];
+  const worstPaidCh = chEval.filter(c => c.unit_cost > 0).sort((a, b) => a.ratio - b.ratio)[0];
+  const topCh = chEval[0];
+  const top3Combo = ['pregrabada', 'sms', 'call_center'];
+  const simCombo = simulateScenario({ channels: new Set(top3Combo) });
+
+  // 4) Mejores segmentos y regionales
+  const bestSegs = [...sim.estStats].sort((a, b) => b.incNet - a.incNet).slice(0, 3);
+  const weakSegs = [...sim.estStats].filter(e => e.cnt > 0).sort((a, b) => a.projEff - b.projEff).slice(0, 2);
+  const topRegs  = sim.regStats.slice(0, 3);
+
+  // 5) Análisis de canibalización
+  const canibRiskHigh = (STATE.promo.minCuotas <= 1 && STATE.promo.discount >= 5) || (sim.canibNetEffect < 0);
+  const canibText = STATE.promo.discount === 0
+    ? `Con <strong>0% de descuento</strong> el riesgo de canibalización es <strong>nulo ($0)</strong>; todo el recaudo adicional proviene de la gestión de canales.`
+    : (canibRiskHigh
+      ? `<strong>⚠️ Riesgo ALTO de canibalización:</strong> Aproximadamente <strong>${fmtInt(sim.canibClients)} clientes</strong> que igual habrían pagado sin promoción recibirían ${fmtCOP(sim.canibDiscountTotalPromo)} en descuento sin compensarlo con cuotas adelantadas (efecto neto en habituales: <strong>${fmtCOP(sim.canibNetEffect)}</strong>). <strong>Recomendación:</strong> exigir mínimo 3 cuotas para acceder al descuento.`
+      : `<strong>✅ Canibalización controlada por regla de ${STATE.promo.minCuotas} cuotas:</strong> Aunque ~${fmtInt(sim.canibClients)} pagadores habituales acceden a la promo (descuento de ${fmtCOP(sim.canibDiscountOnBaseCuota)} sobre su cuota regular), al adelantar <strong>${STATE.promo.minCuotas - 1} cuotas adicionales</strong> generan <strong>+${fmtCOP(sim.canibExtraCuotasCash)}</strong> de caja anticipada (efecto neto positivo de +${fmtCOP(sim.canibNetEffect)}).`);
+
+  // 6) Ahorro del botón de exclusión de posibles pagos
+  const payGuardInsight = STATE.excludePayMaster
+    ? `El filtro de exclusión activo retiró <strong>${fmtInt(sim.excludedCount)} clientes</strong> con posibles pagos en Bancolombia/Nequi/Davivienda/Wompi/PSE, evitando contacto duplicado y ahorrando <strong>${fmtCOP(sim.savedCostIfExcluded)}</strong> en costos de envío.`
+    : (sim.segAnyPay > 0
+      ? `Hay <strong>${fmtInt(sim.segAnyPay)} clientes</strong> en la selección con posible pago sin cruzar (Bancolombia/Nequi/Davivienda/Wompi/PSE). Activar el botón superior <em>"Excluir clientes con posibles pagos"</em> evita incomodar al cliente y ahorra presupuesto de envío.`
+      : `No se detectaron pagos pendientes de cruce en los 5 canales bancarios para esta selección.`);
+
+  const cards = [
+    {
+      cls: sim.recaudoIncrementalNeto > 0 ? 'good' : 'bad',
+      title: '1. Balance Financiero y Recaudo Adicional vs. No Hacer Campaña',
+      body: `Sin campaña se proyectan <strong>${fmtCOP(sim.weightedBaseRev)}</strong> (${fmtPct(sim.baseEff,1)}). Con Black Days el recaudo neto alcanza <strong>${fmtCOP(sim.recaudoNeto)}</strong>, generando <strong>${sim.recaudoIncrementalNeto>=0?'+':''}${fmtCOP(sim.recaudoIncrementalNeto)}</strong> adicionales netos (${sim.crecimientoPct>=0?'+':''}${fmtPct(sim.crecimientoPct,1)}). El recaudo adicional bruto (${fmtCOP(sim.recaudoBruto - sim.weightedBaseRev)}) <strong>${(sim.recaudoBruto - sim.weightedBaseRev) > (sim.descuentos + sim.totalCostCom) ? 'SÍ compensa' : 'NO compensa'}</strong> los descuentos (${fmtCOP(sim.descuentos)}) y costos de comunicación (${fmtCOP(sim.totalCostCom)}).`
+    },
+    {
+      cls: 'good',
+      title: '2. Canales Más Eficientes y Mejor Combinación',
+      body: `El canal individual de mayor aporte es <strong>${topCh ? topCh.name : 'N/A'}</strong> (incremental estimado: ${topCh ? fmtCOP(topCh.inc) : '$0'}). Entre canales pagos, <strong>${bestPaidCh ? bestPaidCh.name : 'N/A'}</strong> ($${bestPaidCh ? bestPaidCh.unit_cost : 0}/contacto) ofrece el mejor retorno por peso invertido. La combinación sugerida <strong>Llamada Pregrabada + SMS + Call Center</strong> proyecta un incremental neto de <strong>${fmtCOP(simCombo.recaudoIncrementalNeto)}</strong> sin duplicar contactos.`
+    },
+    {
+      cls: worstPaidCh && worstPaidCh.unit_cost >= 80 ? 'warn' : '',
+      title: '3. Alerta de Canales de Mayor Costo o Baja Eficiencia',
+      body: `${worstPaidCh ? `<strong>${worstPaidCh.name}</strong> tiene el costo unitario más alto ($${worstPaidCh.unit_cost} COP/contacto; costo sobre esta base: ${fmtCOP(sim.validCellClients * worstPaidCh.unit_cost)}). Conviene reservar WhatsApp Masivo ($89) únicamente para mora temprana (1–25 días) o clientes de cuota alta (> $35.000), y usar SMS ($11,9) o Llamada Pregrabada ($30) para barridos masivos.` : 'Ajusta los canales pagos para evaluar eficiencia.'}`
+    },
+    {
+      cls: 'good',
+      title: '4. Segmentos con Mayor Potencial y Regionales Prioritarias',
+      body: `<strong>Top segmentos:</strong> ${bestSegs.map(s => `${s.name} (${fmtCOP(s.incNet)})`).join(', ') || 'N/A'}. <strong>Regionales prioritarias:</strong> ${topRegs.map(r => `${r.name} (${fmtCOP(r.incNet)})`).join(', ') || 'N/A'}.${weakSegs.length ? ` En <em>${weakSegs.map(w=>w.name).join(' y ')}</em> la conversión esperada es baja (${weakSegs[0].projEff.toFixed(1)}%); evitar canales pagos costosos allí.` : ''}`
+    },
+    {
+      cls: canibRiskHigh ? 'warn' : 'good',
+      title: '5. Descuento Óptimo y Riesgo de Canibalización',
+      body: `Según sensibilidad sobre la selección actual, el nivel de descuento que maximiza el recaudo incremental neto es <strong>${bestDisc.d}%</strong> (proyectando ${fmtCOP(bestDisc.inc)}). ${canibText}`
+    },
+    {
+      cls: STATE.excludePayMaster ? 'good' : 'warn',
+      title: '6. Optimización de Recursos y Control Anti-Fricción (Pagos)',
+      body: `${payGuardInsight} Adicionalmente, prioriza <strong>Call Center y WhatsApp Dirigido ($0 costo variable)</strong> en tramos de 11–50 días donde el cierre personalizado eleva la adopción de 3 a 6 cuotas.`
+    },
+  ];
+
+  grid.innerHTML = cards.map(c => `<div class="insight-card ${c.cls}"><h4>${c.title}</h4><p>${c.body}</p></div>`).join('');
+}
+
+// ============================================================================
+// CARGA DE BASE COMPACTA GZIP Y EXPORTADOR NATIVO .XLSX (100% OFFLINE)
+// ============================================================================
+async function initContractsPayload() {
+  const pill = document.getElementById('contractsStatusPill');
+  try {
+    if (!window.__BD_CONTRACTS_GZ__) {
+      pill.textContent = '⚠️ Base de exportación externa no cargada';
+      return;
+    }
+    pill.textContent = '⏳ Descomprimiendo ' + fmtInt(DATA.total_contracts) + ' contratos reales...';
+    const b64 = window.__BD_CONTRACTS_GZ__;
+    const binStr = atob(b64);
+    const bytes = new Uint8Array(binStr.length);
+    for (let i = 0; i < binStr.length; i++) bytes[i] = binStr.charCodeAt(i);
+
+    const ds = new DecompressionStream('gzip');
+    const stream = new Blob([bytes]).stream().pipeThrough(ds);
+    const text = await new Response(stream).text();
+    CONTRACTS_DB = JSON.parse(text);
+
+    pill.textContent = '✅ Base real lista para exportar (' + fmtInt(CONTRACTS_DB.rows.length) + ' contratos)';
+    pill.style.background = '#ECFDF5';
+    pill.style.color = '#047857';
+    pill.style.borderColor = '#6EE7B7';
+    renderExportPreview();
+  } catch (err) {
+    console.error(err);
+    pill.textContent = '⚠️ Error descomprimiendo base: ' + err.message;
+  }
+}
+
+function calcValorPropuestaJS(cuota, dias, solo1, pronto) {
+  const d = Number(dias) || 0;
+  const c = Number(cuota) || 0;
+  if (solo1) {
+    if (d <= 0 && !pronto) return 'Al día';
+    return fmtCOPDot(c);
+  }
+  if (d <= 0) return pronto ? fmtCOPDot(c) : 'Al día';
+  if (d <= 30) return fmtCOPDot(c);
+  if (d <= 60) return fmtCOPDot(c * 2);
+  if (d <= 90) return fmtCOPDot(c * 3);
+  return 'Negocia tu oferta especial';
+}
+
+function getFilteredContracts(requireValidCell) {
+  const exMask = getActiveExcludeMask();
+  if (CUSTOM_CONTRACTS) {
+    return CUSTOM_CONTRACTS.filter(c => {
+      if (!STATE.selectedReg.has(c.ri) || !STATE.selectedEst.has(c.ei) || !STATE.selectedMed.has(c.mi)) return false;
+      if (exMask && (c.pm & exMask)) return false;
+      if (requireValidCell && !c.cel_val) return false;
+      return true;
+    });
+  }
+  if (!CONTRACTS_DB) return null;
+  const out = [];
+  const rows = CONTRACTS_DB.rows;
+  for (let i = 0; i < rows.length; i++) {
+    const r = rows[i];
+    // 11:reg_idx, 15:med_idx, 20:est_idx, 23:pay_mask, 5:cel_val
+    if (!STATE.selectedReg.has(r[11]) || !STATE.selectedEst.has(r[20]) || !STATE.selectedMed.has(r[15])) continue;
+    if (exMask && (r[23] & exMask)) continue;
+    if (requireValidCell && !r[5]) continue;
+    out.push(r);
+  }
+  return out;
+}
+
+function renderExportPreview() {
+  const wspInfo = document.getElementById('wspCountInfo');
+  const callInfo = document.getElementById('callCountInfo');
+  const prevMeta = document.getElementById('previewMeta');
+  const tbody = document.getElementById('previewTbody');
+
+  const lock10 = document.getElementById('optLock10').checked;
+  const dPct = lock10 ? 10 : STATE.promo.discount;
+  const solo1 = document.getElementById('optSolo1Cuota').checked;
+  const pronto = document.getElementById('optProntoPago').checked;
+
+  document.getElementById('th3c').textContent = `VALOR POR 3 CUOTAS CON EL ${dPct}%`;
+  document.getElementById('th6c').textContent = `VALOR POR 6 CUOTAS CON EL ${dPct}%`;
+
+  const sim = simulateScenario();
+  wspInfo.textContent  = `Listos para envío (celular válido 10d): ${fmtInt(sim.validCellClients)} registros`;
+  callInfo.textContent = `Base completa Call Center: ${fmtInt(sim.totalClients)} registros (27 columnas)`;
+
+  const list = getFilteredContracts(true);
+  if (list === null) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748B;padding:12px;">Cargando contratos reales...</td></tr>';
+    return;
+  }
+
+  prevMeta.textContent = `Mostrando 12 de ${fmtInt(list.length)} registros válidos con celular 10d${STATE.excludePayMaster ? ' (posibles pagos excluidos)' : ''}`;
+  if (!list.length) {
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#64748B;padding:12px;">No hay registros con celular válido para los filtros seleccionados.</td></tr>';
+    return;
+  }
+
+  const multD = 1 - (dPct / 100);
+  const slice = list.slice(0, 12);
+  tbody.innerHTML = slice.map(r => {
+    const isCustom = !Array.isArray(r);
+    const cel   = isCustom ? r.cel_val : r[5];
+    const nom   = isCustom ? r.nom_corto : r[4];
+    const dias  = isCustom ? r.dias : r[19];
+    const cuota = isCustom ? r.cuota : r[18];
+    const reg   = isCustom ? DATA.regionales[r.ri] : CONTRACTS_DB.regionales[r[11]];
+    const pm    = isCustom ? r.pm : r[23];
+    const prop  = calcValorPropuestaJS(cuota, dias, solo1, pronto);
+    const v3    = fmtCOPDot(Math.round(cuota * 3 * multD));
+    const v6    = fmtCOPDot(Math.round(cuota * 6 * multD));
+    return `<tr>
+      <td class="ctr" style="font-weight:700;color:#1D3E7A">${escHtml(cel)}</td>
+      <td>${escHtml(nom)}</td>
+      <td class="ctr">${dias}</td>
+      <td class="num" style="font-weight:700">${escHtml(prop)}</td>
+      <td class="num">${escHtml(v3)}</td>
+      <td class="num">${escHtml(v6)}</td>
+      <td>${escHtml(reg)}</td>
+      <td style="color:${pm?'#B45309':'#64748B'};font-weight:${pm?'700':'400'}">${escHtml(payMaskToText(pm))}</td>
+    </tr>`;
+  }).join('');
+}
+
+// ============================================================================
+// GENERADOR PURO-JS DE ARCHIVO .XLSX NATIVO CON ESTILO CORPORATIVO #1F4E78
+// (ZIP CRC32 + OpenXML válido: 0 dependencias externas, 0 advertencias Excel)
+// ============================================================================
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+
+function crc32(bytes) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < bytes.length; i++) c = CRC_TABLE[(c ^ bytes[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function buildZipBlob(files) {
+  const enc = new TextEncoder();
+  const localParts = [];
+  const centralParts = [];
+  let offset = 0;
+
+  for (const f of files) {
+    const nameBytes = enc.encode(f.name);
+    const dataBytes = (f.data instanceof Uint8Array) ? f.data : enc.encode(f.data);
+    const crc = crc32(dataBytes);
+    const size = dataBytes.length;
+
+    const lfh = new Uint8Array(30 + nameBytes.length);
+    const lv = new DataView(lfh.buffer);
+    lv.setUint32(0, 0x04034b50, true);
+    lv.setUint16(4, 20, true);
+    lv.setUint16(6, 0x0800, true); // UTF-8
+    lv.setUint16(8, 0, true);      // STORE
+    lv.setUint16(10, 0, true);
+    lv.setUint16(12, 0x5621, true);
+    lv.setUint32(14, crc, true);
+    lv.setUint32(18, size, true);
+    lv.setUint32(22, size, true);
+    lv.setUint16(26, nameBytes.length, true);
+    lv.setUint16(28, 0, true);
+    lfh.set(nameBytes, 30);
+
+    localParts.push(lfh, dataBytes);
+
+    const cdh = new Uint8Array(46 + nameBytes.length);
+    const cv = new DataView(cdh.buffer);
+    cv.setUint32(0, 0x02014b50, true);
+    cv.setUint16(4, 20, true);
+    cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0x0800, true);
+    cv.setUint16(10, 0, true);
+    cv.setUint16(12, 0, true);
+    cv.setUint16(14, 0x5621, true);
+    cv.setUint32(16, crc, true);
+    cv.setUint32(20, size, true);
+    cv.setUint32(24, size, true);
+    cv.setUint16(28, nameBytes.length, true);
+    cv.setUint16(30, 0, true);
+    cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true);
+    cv.setUint16(36, 0, true);
+    cv.setUint32(38, 0, true);
+    cv.setUint32(42, offset, true);
+    cdh.set(nameBytes, 46);
+    centralParts.push(cdh);
+
+    offset += lfh.length + size;
+  }
+
+  const centralSize = centralParts.reduce((s, a) => s + a.length, 0);
+  const eocd = new Uint8Array(22);
+  const ev = new DataView(eocd.buffer);
+  ev.setUint32(0, 0x06054b50, true);
+  ev.setUint16(4, 0, true);
+  ev.setUint16(6, 0, true);
+  ev.setUint16(8, files.length, true);
+  ev.setUint16(10, files.length, true);
+  ev.setUint32(12, centralSize, true);
+  ev.setUint32(16, offset, true);
+  ev.setUint16(20, 0, true);
+
+  return new Blob([...localParts, ...centralParts, eocd], {
+    type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+  });
+}
+
+function xmlEsc(v) {
+  return String(v ?? '')
+    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+function colLetter(n) {
+  let s = '';
+  while (n > 0) {
+    const r = (n - 1) % 26;
+    s = String.fromCharCode(65 + r) + s;
+    n = Math.floor((n - 1) / 26);
+  }
+  return s;
+}
+
+function generateStyledXlsx(sheetName, headers, rowsData, colAligns, colWidths, filename) {
+  // Estilos: s=1 cabecera #1F4E78 blanca negrita centrada | s=2 centro | s=3 izquierda | s=4 derecha
+  const alignStyleMap = { 'center': 2, 'left': 3, 'right': 4 };
+  const lastCol = colLetter(headers.length);
+
+  const chunks = [];
+  chunks.push('<?xml version="1.0" encoding="UTF-8" standalone="yes"?>');
+  chunks.push('<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">');
+  chunks.push('<sheetViews><sheetView tabSelected="1" workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A2" sqref="A2"/></sheetView></sheetViews>');
+  chunks.push('<sheetFormatPr defaultRowHeight="18"/>');
+  chunks.push('<cols>');
+  for (let i = 0; i < headers.length; i++) {
+    const w = colWidths[i] || 18;
+    chunks.push(`<col min="${i+1}" max="${i+1}" width="${w}" customWidth="1"/>`);
+  }
+  chunks.push('</cols><sheetData>');
+
+  // Fila 1: Cabecera
+  let r1 = '<row r="1" ht="26" customHeight="1">';
+  for (let c = 0; c < headers.length; c++) {
+    r1 += `<c r="${colLetter(c+1)}1" s="1" t="inlineStr"><is><t>${xmlEsc(headers[c])}</t></is></c>`;
+  }
+  r1 += '</row>';
+  chunks.push(r1);
+
+  // Filas de datos
+  for (let i = 0; i < rowsData.length; i++) {
+    const rowNum = i + 2;
+    const row = rowsData[i];
+    let rXml = `<row r="${rowNum}">`;
+    for (let c = 0; c < headers.length; c++) {
+      const val = row[c];
+      const st = alignStyleMap[colAligns[c] || 'left'] || 3;
+      const ref = colLetter(c + 1) + rowNum;
+      if (typeof val === 'number' && isFinite(val)) {
+        rXml += `<c r="${ref}" s="${st}"><v>${val}</v></c>`;
+      } else {
+        rXml += `<c r="${ref}" s="${st}" t="inlineStr"><is><t>${xmlEsc(val)}</t></is></c>`;
+      }
+    }
+    rXml += '</row>';
+    chunks.push(rXml);
+  }
+
+  chunks.push(`</sheetData><autoFilter ref="A1:${lastCol}${Math.max(rowsData.length + 1, 1)}"/></worksheet>`);
+
+  const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+  <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>`;
+
+  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+
+  const wbXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets><sheet name="${xmlEsc(sheetName)}" sheetId="1" r:id="rId1"/></sheets>
+</workbook>`;
+
+  const wbRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+  const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <fonts count="2">
+    <font><sz val="10"/><color rgb="FF111827"/><name val="Calibri"/></font>
+    <font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+  </fonts>
+  <fills count="3">
+    <fill><patternFill patternType="none"/></fill>
+    <fill><patternFill patternType="gray125"/></fill>
+    <fill><patternFill patternType="solid"><fgColor rgb="FF1F4E78"/><bgColor indexed="64"/></patternFill></fill>
+  </fills>
+  <borders count="2">
+    <border><left/><right/><top/><bottom/><diagonal/></border>
+    <border>
+      <left style="thin"><color rgb="FFBFBFBF"/></left>
+      <right style="thin"><color rgb="FFBFBFBF"/></right>
+      <top style="thin"><color rgb="FFBFBFBF"/></top>
+      <bottom style="thin"><color rgb="FFBFBFBF"/></bottom>
+      <diagonal/>
+    </border>
+  </borders>
+  <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+  <cellXfs count="5">
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+    <xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="left" vertical="center"/></xf>
+    <xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyFont="1" applyBorder="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>
+  </cellXfs>
+</styleSheet>`;
+
+  const blob = buildZipBlob([
+    { name: '[Content_Types].xml', data: contentTypes },
+    { name: '_rels/.rels', data: rels },
+    { name: 'xl/workbook.xml', data: wbXml },
+    { name: 'xl/_rels/workbook.xml.rels', data: wbRels },
+    { name: 'xl/styles.xml', data: stylesXml },
+    { name: 'xl/worksheets/sheet1.xml', data: chunks.join('') },
+  ]);
+
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(() => { URL.revokeObjectURL(url); a.remove(); }, 1500);
+}
+
+function buildExportSlug() {
+  const regPart = STATE.selectedReg.size === DATA.regionales.length
+    ? 'TODAS'
+    : (STATE.selectedReg.size === 1
+      ? DATA.regionales[[...STATE.selectedReg][0]].replace(/[^A-Z0-9]+/gi, '_')
+      : `${STATE.selectedReg.size}_REGIONALES`);
+  const payPart = STATE.excludePayMaster ? '_SIN_PAGOS' : '';
+  return `${regPart}${payPart}`.toUpperCase();
+}
+
+function downloadExcelWhatsapp() {
+  const list = getFilteredContracts(true);
+  if (!list) { alert('La base de contratos aún está cargando. Espera un segundo e intenta de nuevo.'); return; }
+  if (!list.length) { alert('No hay registros con celular válido para los filtros seleccionados.'); return; }
+
+  const lock10 = document.getElementById('optLock10').checked;
+  const dPct = lock10 ? 10 : STATE.promo.discount;
+  const solo1 = document.getElementById('optSolo1Cuota').checked;
+  const pronto = document.getElementById('optProntoPago').checked;
+  const multD = 1 - (dPct / 100);
+
+  const headers = [
+    'CELULAR',
+    'NOMBRE',
+    'DIAS_MORA',
+    'VALOR_PROPUESTA',
+    `VALOR POR 3 CUOTAS CON EL ${dPct}%`,
+    `VALOR POR 6 CUOTAS CON EL ${dPct}%`,
+  ];
+  const aligns = ['center', 'left', 'center', 'right', 'right', 'right'];
+  const maxLens = headers.map(h => h.length);
+  const outRows = new Array(list.length);
+
+  for (let i = 0; i < list.length; i++) {
+    const r = list[i];
+    const isCustom = !Array.isArray(r);
+    const cel   = isCustom ? r.cel_val : r[5];
+    const nom   = isCustom ? r.nom_corto : r[4];
+    const dias  = Number(isCustom ? r.dias : r[19]);
+    const cuota = Number(isCustom ? r.cuota : r[18]);
+    const prop  = calcValorPropuestaJS(cuota, dias, solo1, pronto);
+    const v3    = fmtCOPDot(Math.round(cuota * 3 * multD));
+    const v6    = fmtCOPDot(Math.round(cuota * 6 * multD));
+    outRows[i] = [cel, nom, dias, prop, v3, v6];
+    if (nom.length > maxLens[1]) maxLens[1] = nom.length;
+    if (prop.length > maxLens[3]) maxLens[3] = prop.length;
+  }
+
+  const widths = maxLens.map(l => Math.min(36, Math.max(14, l + 4)));
+  const fname = `ENVIO_WHATSAPP_BLACK_DAYS_${buildExportSlug()}.xlsx`;
+  generateStyledXlsx('ENVIO_WHATSAPP', headers, outRows, aligns, widths, fname);
+}
+
+function downloadExcelCallCenter() {
+  const list = getFilteredContracts(false);
+  if (!list) { alert('La base de contratos aún está cargando. Espera un segundo e intenta de nuevo.'); return; }
+  if (!list.length) { alert('No hay registros para los filtros seleccionados.'); return; }
+
+  const dPct = STATE.promo.discount;
+  const solo1 = document.getElementById('optSolo1Cuota').checked;
+  const pronto = document.getElementById('optProntoPago').checked;
+  const multD = 1 - (dPct / 100);
+
+  const headers = [
+    'ORIGEN_HOJA', 'IDCONTRATO', 'IDPERSONA', 'NOMBRES_COMPLETO', 'NOMBRE_CORTO',
+    'CELULAR_VALIDO', 'CELULAR_RAW', 'OTROTELEF', 'TELEFFIJO', 'EMAIL',
+    'DIRECCION', 'REGIONAL', 'ZONAS', 'COBRADOR', 'ASESOR', 'TIPO_COBRADOR',
+    'NOMBREPLAN', 'ESTATUS', 'CUOTA', 'DIAS_MORA', 'ESTADO_CARTERA',
+    'FECHAULTIMOPAGO', 'PAGOHASTA', 'POSIBLE_PAGO_RADAR',
+    'VALOR_PROPUESTA', `VALOR_3_CUOTAS_${dPct}PCT`, `VALOR_6_CUOTAS_${dPct}PCT`
+  ];
+  const aligns = [
+    'center','center','center','left','left',
+    'center','center','center','center','left',
+    'left','left','left','left','left','center',
+    'left','center','right','center','left',
+    'center','center','left','right','right','right'
+  ];
+  const widths = [13,13,14,30,20,14,15,15,15,24,30,20,20,22,22,18,22,14,12,11,26,15,15,24,24,20,20];
+  const outRows = new Array(list.length);
+
+  for (let i = 0; i < list.length; i++) {
+    const r = list[i];
+    if (!Array.isArray(r)) {
+      const prop = calcValorPropuestaJS(r.cuota, r.dias, solo1, pronto);
+      outRows[i] = [
+        'CSV_CARGADO', r.id||'', r.ced||'', r.nom_full||'', r.nom_corto||'',
+        r.cel_val||'', r.cel_raw||'', r.otro_raw||'', r.fijo_raw||'', r.email||'',
+        r.dir||'', DATA.regionales[r.ri]||'', '', r.cob||'', '', DATA.medios[r.mi]||'',
+        '', '', r.cuota, r.dias, DATA.estados[r.ei]?.label||'',
+        '', '', payMaskToText(r.pm), prop,
+        fmtCOPDot(Math.round(r.cuota * 3 * multD)), fmtCOPDot(Math.round(r.cuota * 6 * multD))
+      ];
+    } else {
+      const cuota = r[18], dias = r[19];
+      const prop = calcValorPropuestaJS(cuota, dias, solo1, pronto);
+      outRows[i] = [
+        r[0] === 0 ? 'ATRASO' : 'VIGENTES',
+        r[1], r[2], r[3], r[4],
+        r[5], r[6] || r[5], r[7], r[8], r[9],
+        r[10], CONTRACTS_DB.regionales[r[11]]||'', CONTRACTS_DB.zonas[r[12]]||'',
+        CONTRACTS_DB.cobradores[r[13]]||'', CONTRACTS_DB.asesores[r[14]]||'',
+        CONTRACTS_DB.medios[r[15]]||'', CONTRACTS_DB.planes[r[16]]||'',
+        CONTRACTS_DB.estatus[r[17]]||'', cuota, dias,
+        CONTRACTS_DB.estados_labels[r[20]]||'', r[21], r[22],
+        payMaskToText(r[23]), prop,
+        fmtCOPDot(Math.round(cuota * 3 * multD)),
+        fmtCOPDot(Math.round(cuota * 6 * multD))
+      ];
+    }
+  }
+
+  const fname = `BASE_CALL_CENTER_BLACK_DAYS_${buildExportSlug()}.xlsx`;
+  generateStyledXlsx('BASE_CALL_CENTER', headers, outRows, aligns, widths, fname);
+}
+
+// ============================================================================
+// IMPORTADOR CSV / TSV PROPIO EN EL NAVEGADOR (ALIMENTAR CON DATA NUEVA)
+// ============================================================================
+function extractMobileJS(c1, c2, c3) {
+  for (const raw of [c1, c2, c3]) {
+    if (!raw) continue;
+    const parts = String(raw).replace(/\u00a0/g, ' ').split(/[/,;|\n–—]+|\s+-\s+/);
+    for (let p of parts) {
+      p = p.trim().replace(/\.0$/, '');
+      let d = p.replace(/[^0-9]/g, '');
+      if (d.length === 12 && d.startsWith('57')) d = d.slice(2);
+      if (d.length === 10 && d.startsWith('3')) return d;
+    }
+  }
+  return '';
+}
+function shortNameJS(raw) {
+  const s = String(raw || '').replace(/\u00a0/g, ' ').trim();
+  const w = s.split(/\s+/).filter(Boolean);
+  if (!w.length) return '';
+  if (w.length === 1) return w[0][0].toUpperCase() + w[0].slice(1).toLowerCase();
+  const cap = x => x[0].toUpperCase() + x.slice(1).toLowerCase();
+  const ap = w[0];
+  const nom = w.length >= 4 ? w[2] : (w.length === 3 ? w[2] : w[1]);
+  return cap(nom) + ' ' + cap(ap);
+}
+function classifyEstadoJS(d) {
+  if (d <= -61) return 3;
+  if (d <= -31) return 2;
+  if (d <= -11) return 1;
+  if (d <= -1) return 0;
+  if (d === 0) return 4;
+  if (d <= 10) return 5;
+  if (d <= 25) return 6;
+  if (d <= 50) return 7;
+  if (d <= 90) return 8;
+  return 9;
+}
+
+function handleCustomCsv(evt) {
+  const file = evt.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    const text = reader.result || '';
+    const lines = text.split(/\r?\n/).filter(l => l.trim());
+    if (lines.length < 2) { alert('El archivo CSV no contiene suficientes filas.'); return; }
+    const sep = (lines[0].split(';').length > lines[0].split(',').length) ? ';' : ',';
+    const hdr = lines[0].split(sep).map(h => h.replace(/^"|"$/g, '').trim().toUpperCase());
+
+    const findCol = (names) => hdr.findIndex(h => names.some(n => h.includes(n)));
+    const iReg  = findCol(['REGIONAL']);
+    const iDias = findCol(['ATRASO', 'MORA', 'DIAS']);
+    const iCuo  = findCol(['CUOTA', 'VALOR']);
+    const iMed  = findCol(['TIPO', 'MEDIO', 'COBRADOR']);
+    const iNom  = findCol(['NOMBRE', 'TITULAR', 'CLIENTE']);
+    const iCel  = findCol(['CELULAR', 'MOVIL']);
+    const iOtro = findCol(['OTROTELEF', 'OTRO']);
+    const iFijo = findCol(['TELEFFIJO', 'TELEFONO', 'FIJO']);
+    const iId   = findCol(['IDCONTRATO', 'CONTRATO']);
+    const iCed  = findCol(['IDPERSONA', 'CEDULA', 'DOCUMENTO']);
+
+    if (iDias < 0 || iCuo < 0) {
+      alert('No se encontraron columnas de ATRASO/MORA y CUOTA en el CSV. Verifica encabezados.');
+      return;
+    }
+
+    const regSet = new Map();
+    const medSet = new Map();
+    const cubeMap = new Map();
+    const customList = [];
+
+    for (let i = 1; i < lines.length; i++) {
+      const cols = lines[i].split(sep).map(v => v.replace(/^"|"$/g, '').trim());
+      const dias = parseInt(cols[iDias], 10);
+      const cuota = Math.abs(parseFloat(String(cols[iCuo] || '0').replace(/[^0-9.-]/g, ''))) || 0;
+      if (isNaN(dias)) continue;
+      const reg = (iReg >= 0 && cols[iReg] ? cols[iReg].toUpperCase() : 'GENERAL');
+      const medRaw = (iMed >= 0 && cols[iMed] ? cols[iMed].toUpperCase() : 'MEDIOS');
+      const med = medRaw.includes('ASESOR') || medRaw.includes('COBR') ? 'ASESOR COBRANZA'
+        : (medRaw.includes('OFIC') ? 'OFICINA' : (medRaw.includes('PUNTO') ? 'PUNTO DE RECAUDO' : 'MEDIOS'));
+
+      if (!regSet.has(reg)) regSet.set(reg, regSet.size);
+      if (!medSet.has(med)) medSet.set(med, medSet.size);
+      const ri = regSet.get(reg), mi = medSet.get(med), ei = classifyEstadoJS(dias);
+      const celVal = extractMobileJS(iCel>=0?cols[iCel]:'', iOtro>=0?cols[iOtro]:'', iFijo>=0?cols[iFijo]:'');
+      const key = `${ri}|${ei}|${mi}|0`;
+      if (!cubeMap.has(key)) cubeMap.set(key, [ri, ei, mi, 0, 0, 0, 0]);
+      const acc = cubeMap.get(key);
+      acc[4] += 1;
+      if (celVal) acc[5] += 1;
+      acc[6] += Math.round(cuota);
+
+      customList.push({
+        id: iId>=0?cols[iId]:'', ced: iCed>=0?cols[iCed]:'',
+        nom_full: iNom>=0?cols[iNom]:'', nom_corto: shortNameJS(iNom>=0?cols[iNom]:''),
+        cel_val: celVal, cel_raw: iCel>=0?cols[iCel]:'', otro_raw: iOtro>=0?cols[iOtro]:'',
+        fijo_raw: iFijo>=0?cols[iFijo]:'', email: '', dir: '', cob: '',
+        ri, mi, ei, cuota: Math.round(cuota), dias, pm: 0
+      });
+    }
+
+    if (!customList.length) { alert('No se pudieron importar filas válidas.'); return; }
+    CUSTOM_CONTRACTS = customList;
+    DATA = {
+      ...INITIAL_CUBE,
+      total_contracts: customList.length,
+      regionales: [...regSet.keys()],
+      medios: [...medSet.keys()],
+      cube: [...cubeMap.values()],
+    };
+    const badge = document.getElementById('dataSourceBadge');
+    badge.textContent = `CSV Cargado: ${fmtInt(customList.length)} registros (${file.name})`;
+    badge.classList.add('badge-custom');
+    initDefaultSelections();
+    updateAll();
+  };
+  reader.readAsText(file, 'utf-8');
+}
+
+// ============================================================================
+// CICLO MAESTRO DE ACTUALIZACIÓN (< 5 ms)
+// ============================================================================
+function updateAll(keepChannelFocus=false) {
+  renderFilterCheckboxes();
+  const sim = simulateScenario();
+  renderPayGuard(sim);
+  renderChannels(sim, keepChannelFocus);
+  renderKPIs(sim);
+  renderAllCharts(sim);
+  renderThreeScenarios(sim);
+  renderAutomaticAnalysis(sim);
+  renderExportPreview();
+}
+
+// Arranque inmediato
+initDefaultSelections();
+updateAll();
+if (window.__BD_CONTRACTS_GZ__) { initContractsPayload(); }
+</script>
+</body>
+</html>
