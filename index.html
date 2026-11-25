@@ -1559,9 +1559,9 @@ function setChannelEff(id, val) {
 // MOTOR FINANCIERO Y DE SIMULACIÓN (CERO DUPLICACIÓN DE CLIENTES)
 // ============================================================================
 function simulateScenario(overrideParams = null) {
-  const promo = overrideParams ? overrideParams.promo : STATE.promo;
-  const exMask = overrideParams && overrideParams.exMask !== undefined ? overrideParams.exMask : getActiveExcludeMask();
-  const selCh  = overrideParams && overrideParams.channels ? overrideParams.channels : STATE.selectedCh;
+  const promo = (overrideParams && overrideParams.promo) ? overrideParams.promo : STATE.promo;
+  const exMask = (overrideParams && overrideParams.exMask !== undefined) ? overrideParams.exMask : getActiveExcludeMask();
+  const selCh  = (overrideParams && overrideParams.channels) ? overrideParams.channels : STATE.selectedCh;
 
   // 1) Filtrar hipercubo y calcular baseline real + conteo de posibles pagos en el segmento
   let totalClients = 0;
@@ -1655,7 +1655,7 @@ function simulateScenario(overrideParams = null) {
     const isOn = selCh.has(ch.id);
     const contactCount = ch.requires_valid_cell ? validCellClients : totalClients;
     const reachRatio   = totalClients > 0 ? (contactCount / totalClients) : 0;
-    const unitCost     = (STATE.chCostOverride[ch.id] !== undefined && !overrideParams)
+    const unitCost     = (STATE.chCostOverride[ch.id] !== undefined)
       ? STATE.chCostOverride[ch.id] : ch.unit_cost;
     const totalCost    = isOn ? (contactCount * unitCost) : 0;
 
@@ -1667,7 +1667,7 @@ function simulateScenario(overrideParams = null) {
     let effectiveChTotalEff = defaultChTotalEff;
     let incLiftForCombine = defaultIncLift * reachRatio;
 
-    if (STATE.chEffOverride[ch.id] !== undefined && !overrideParams) {
+    if (STATE.chEffOverride[ch.id] !== undefined) {
       effectiveChTotalEff = Math.min(0.92, Math.max(0, STATE.chEffOverride[ch.id] / 100.0));
       // Despejar lift implícito desde la efectividad manual editada por el usuario
       if (effectiveChTotalEff > baseEff && baseEff < 0.99) {
